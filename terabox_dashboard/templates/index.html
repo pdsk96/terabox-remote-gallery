@@ -240,7 +240,7 @@ header{
         <option value="1080">HLS 1080p</option>
         <option value="orig">Asli</option>
       </select>
-      <select id="vs" onchange="spd()"><option>0.5×</option><option>0.75×</option><option selected>1×</option><option>1.25×</option><option>1.5×</option><option>2×</option></select>
+      <select id="vs" onchange="spd()"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
       <button onclick="closeV()">✖ Tutup</button>
     </div>
   </div>
@@ -360,7 +360,7 @@ function del(){ if(sel.size&&confirm("Hapus "+sel.size+" item?"))op("delete",[..
 async function mk(){ const n=prompt("Nama folder baru:"); if(!n)return; const r=await post("/api/mkdir",{path:join(cwd,n)}); toast(r.ok?"Folder dibuat":"Gagal (errno "+r.errno+")"); go(cwd); }
 function closeV(){ if(hls){hls.destroy();hls=null} $("#viewer-content").replaceChildren(); $("#viewer").hidden=true; }
 function nav(d){ vi=(vi+d+media.length)%media.length; play(); }
-function spd(){ const m=$("#viewer-content video,#viewer-content audio"); if(m)m.playbackRate=+$("#vs").value; }
+function spd(){ const m=$("#viewer-content video,#viewer-content audio"); if(m){ const r=+$("#vs").value; if(isFinite(r))m.playbackRate=r; } }
 function play(){
   const i=media[vi]; if(hls){hls.destroy();hls=null}
   $("#viewer").hidden=false; $("#viewer-title").textContent=i.name;
