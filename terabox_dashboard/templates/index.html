@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TeraBox Remote Gallery</title>
+<style>
+:root{
+  --bg:#0b0d12;
+  --surface:#141922;
+  --surface-elev:#1c232e;
+  --text:#e8eaf0;
+  --text-muted:#94a0b0;
+  --accent:#4f8cff;
+  --accent-hover:#6fa3ff;
+  --border:#2a323f;
+  --danger:#ef5350;
+  --success:#66bb6a;
+  --radius:12px;
+}
+*,*:before,*:after{box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+
+button,input,select,textarea{
+  font:inherit;color:inherit;background:transparent;
+  border:none;border-radius:8px;padding:0;margin:0;
+  outline:none;appearance:none;-webkit-appearance:none
+}
+button{cursor:pointer;user-select:none}
+[hidden]{display:none!important}
+a{color:var(--accent);text-decoration:none}
+
+/* ---------- Login ---------- */
+#login{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:calc(100vh - 24px);padding:16px;gap:12px
+}
+.login-card{
+  width:100%;max-width:400px;background:var(--surface);
+  border:1px solid var(--border);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px
+}
+.login-card h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em}
+.login-card p{margin:0;font-size:13px;color:var(--text-muted);line-height:1.5}
+.login-card input{
+  width:100%;background:var(--surface-elev);border:1px solid var(--border);
+  color:var(--text);padding:12px 14px;border-radius:10px;font-size:15px
+}
+.login-card button.primary{
+  background:var(--accent);color:#fff;padding:12px;border-radius:10px;
+  font-weight:600;font-size:15px
+}
+#err{margin:0;font-size:13px;color:var(--danger);min-height:18px}
+.login-hint{font-size:12px;color:var(--text-muted);text-align:center;line-height:1.4}
+
+/* ---------- App shell ---------- */
+#app{display:flex;flex-direction:column;height:100vh}
+header{
+  position:sticky;top:0;background:var(--surface);
+  border-bottom:1px solid var(--border);z-index:20;backdrop-filter:blur(8px)
+}
+.header-wrap{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.app-title{font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text)}
+.quota-row{width:100%;display:flex;align-items:center;gap:10px}
+#quota-text{font-size:13px;color:var(--text-muted);min-width:150px}
+.quota-bar{flex:1;height:6px;background:var(--surface-elev);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.quota-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-hover))}
+.btn-logout{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  padding:8px 12px;border-radius:8px;font-size:13px
+}
+
+/* ---------- Toolbar ---------- */
+.toolbar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;z-index:10}
+.search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#q{flex:1;min-width:0;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
+.filter-sel,.sort-sel,.view-toggle{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  padding:8px 10px;border-radius:10px;font-size:13px;min-width:110px
+}
+.live-wrap{display:flex;align-items:center;gap:8px}
+.live-wrap input{accent-color:var(--accent);width:18px;height:18px}
+.actions-row{display:flex;gap:6px;flex-wrap:wrap}
+.actions-row button{
+  flex:1;min-width:70px;background:var(--surface-elev);border:1px solid var(--border);
+  color:var(--text);padding:9px 10px;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px
+}
+.actions-row button.primary{background:var(--accent);color:#fff}
+
+/* ---------- Breadcrumb ---------- */
+.crumb{padding:8px 16px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;padding-bottom:10px}
+.crumb a{color:var(--accent);padding:0 4px}
+
+/* ---------- Grid / List ---------- */
+#main{flex:1;overflow:auto;padding:12px}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px
+}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;display:flex;flex-direction:column;position:relative;transition:transform .1s,border-color .1s
+}
+.item:active{transform:scale(0.98)}
+.item.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,140,255,.2)}
+.item input{position:absolute;top:10px;left:10px;width:20px;height:20px;accent-color:var(--accent);z-index:3}
+.item-thumb{
+  aspect-ratio:1;position:relative;background:#0f131a;
+  display:flex;align-items:center;justify-content:center;overflow:hidden
+}
+.item-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.item-thumb .emoji{font-size:42px;line-height:1}
+.item-thumb .badge{
+  position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);
+  color:#fff;font-size:10px;padding:2px 6px;border-radius:4px
+}
+.item-body{padding:10px;flex:1;display:flex;flex-direction:column;gap:4px}
+.item-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.item-meta{font-size:11px;color:var(--text-muted)}
+.list .item{flex-direction:row;height:72px}
+.list .item-thumb{width:60px;height:60px;flex-shrink:0;border-radius:10px}
+.list .item-thumb .emoji{font-size:26px}
+.list .item-body{padding:8px 12px}
+.empty{padding:40px 16px;text-align:center;color:var(--text-muted);font-size:14px}
+
+/* ---------- Viewer ---------- */
+#viewer{
+  position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column
+}
+.viewer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:rgba(0,0,0,.6);z-index:2
+}
+.viewer-title{color:#fff;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.viewer-controls{display:flex;gap:6px;align-items:center}
+.viewer-controls select,.viewer-controls button{
+  background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.3);
+  padding:8px 10px;border-radius:8px;font-size:13px
+}
+.viewer-body{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:16px}
+.viewer-body video,.viewer-body img{max-width:100%;max-height:100%;display:block;background:#000}
+.viewer-body audio{width:100%;max-width:600px}
+
+/* ---------- Toast ---------- */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(20,25,34,.9);color:#fff;padding:10px 16px;border-radius:24px;
+  font-size:13px;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)
+}
+
+/* ---------- Floating nav ---------- */
+.bottom-nav{
+  position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 16px;display:flex;justify-content:space-between;z-index:10
+}
+.bottom-nav button{
+  flex:1;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  padding:10px;border-radius:10px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px
+}
+.bottom-nav button.primary{background:var(--accent);color:#fff}
+.bottom-nav .dot{font-size:10px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="login-card">
+    <h2>☁️ TeraBox</h2>
+    <p>Masuk dengan cookie <b>ndus</b> dari browser TeraBox Anda (DevTools → Application → Cookies → cari <code>ndus</code>).</p>
+    <input id="ndus" type="password" placeholder="nilai ndus / ndus=..." autocomplete="off">
+    <button class="primary" onclick="login()">Masuk</button>
+    <p id="err"></p>
+    <p class="login-hint">TeraBox tidak memiliki API login email/password publik. Gunakan cookie ndus setelah login di web TeraBox.</p>
+  </div>
+</div>
+
+<div id="app" hidden>
+<header>
+  <div class="header-wrap">
+    <div class="header-top">
+      <div class="app-title">☁️ TeraBox</div>
+      <button class="btn-logout" onclick="logout()">Keluar</button>
+    </div>
+    <div class="quota-row">
+      <div id="quota-text">– / –</div>
+      <div class="quota-bar"><i id="quota-bar"></i></div>
+    </div>
+  </div>
+</header>
+
+<div class="crumb" id="crumb"></div>
+
+<div class="toolbar">
+  <div class="search-row">
+    <input id="q" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
+    <select id="ft" class="filter-sel" onchange="filt=this.value;render()">
+      <option value="all">Semua</option><option value="video">Video</option><option value="image">Gambar</option><option value="audio">Audio</option>
+    </select>
+    <select id="sort" class="sort-sel" onchange="go(cwd)">
+      <option value="time">Terbaru</option><option value="name">Nama</option><option value="size">Ukuran</option>
+    </select>
+    <button class="view-toggle" onclick="view=view==='grid'?'list':'grid';render()" title="Ubah tampilan">
+      <span id="view-icon">▦</span>
+    </button>
+  </div>
+  <div class="live-wrap">
+    <input type="checkbox" id="lv" onchange="live()" checked>
+    <label for="lv" style="margin:0;font-size:13px;color:var(--text-muted)">Refresh otomatis</label>
+  </div>
+  <div class="actions-row">
+    <button onclick="mk()">📁 Baru</button>
+    <button onclick="ren()">✏️ Ubah nama</button>
+    <button onclick="mv('move')">➡️ Pindah</button>
+    <button onclick="mv('copy')">📋 Salin</button>
+    <button onclick="del()">🗑️ Hapus</button>
+    <button onclick="selAll()">Pilih semua</button>
+  </div>
+</div>
+
+<div id="main">
+  <div class="grid" id="grid"></div>
+</div>
+
+<div class="bottom-nav">
+  <button onclick="nav(-1)">⏮<span class="dot">Sebelum</span></button>
+  <button onclick="closeV()">✖<span class="dot">Tutup</span></button>
+  <button onclick="nav(1)">⏭<span class="dot">Berikutnya</span></button>
+</div>
+
+<div id="viewer" hidden>
+  <div class="viewer-header">
+    <div class="viewer-title" id="viewer-title"></div>
+    <div class="viewer-controls">
+      <select id="vq" onchange="play()">
+        <option value="480">HLS 480p</option>
+        <option value="720">HLS 720p</option>
+        <option value="1080">HLS 1080p</option>
+        <option value="orig">Asli</option>
+      </select>
+      <select id="vs" onchange="spd()"><option>0.5×</option><option>0.75×</option><option selected>1×</option><option>1.25×</option><option>1.5×</option><option>2×</option></select>
+      <button onclick="closeV()">✖ Tutup</button>
+    </div>
+  </div>
+  <div class="viewer-body" id="viewer-content"></div>
+</div>
+
+<div id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+
+let cwd = "/", items = [], shown = [], sel = new Set(), view = "grid", filt = "all", q = "", sig = "", liveTimer;
+let hls = null, vi = 0, media = [];
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const api = async (u, o) => {
+  const r = await fetch(u, o);
+  if (r.status === 401) { showLogin(); throw 0; }
+  return r.json();
+};
+const post = (u, b) => api(u, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(b)});
+const fmt = n => { if(!n)return"-"; const u=["B","KB","MB","GB","TB"]; let i=0; while(n>=1024&&i<4){n/=1024;i++} return n.toFixed(i?1:0)+" "+u[i]; };
+const toast = m => { const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(t.h); t.h=setTimeout(()=>t.hidden=true,2500); };
+const catLabel = i => ({1:"video",2:"audio",3:"image"}[i.cat]||"");
+const join = (d,n) => (d==="/"?"":d)+"/"+n;
+
+function showLogin(){ $("#login").hidden=false; $("#app").hidden=true; }
+function showApp(qt){ $("#login").hidden=true; $("#app").hidden=false; quota(qt); go("/"); live(); }
+function quota(x){ if(!x)return; const pct=x.total?x.used/x.total*100:0; $("#quota-bar").style.width=pct+"%"; $("#quota-text").textContent=fmt(x.used)+" / "+fmt(x.total); }
+
+async function login(){
+  $("#err").textContent="";
+  const r=await post("/api/login",{ndus:$("#ndus").value});
+  if(r.ok){ $("#ndus").value=""; showApp(r.quota); if(r.warn)toast(r.warn); }
+  else {
+    const step = r.step ? ` (${r.step})` : "";
+    const detail = r.detail ? ` — ${r.detail}` : "";
+    $("#err").textContent=r.error+step+detail;
+  }
+}
+async function logout(){ await post("/api/logout",{}); clearInterval(liveTimer); showLogin(); }
+async function go(p, silent=false){
+  const r=await api("/api/list?dir="+encodeURIComponent(p)+"&order="+$("#sort").value);
+  if(!r.ok){ if(!silent)toast("Gagal memuat: "+r.error); return; }
+  quota(r.quota);
+  const s=p+r.items.map(i=>i.path+i.mtime+i.size).join("|");
+  if(silent && s===sig && p===cwd)return;
+  if(p!==cwd)sel.clear();
+  cwd=p; sig=s; items=r.items; crumb(); render();
+}
+function crumb(){
+  let a="/", h=`<a onclick="go('/')">🏠 Beranda</a>`;
+  cwd.split("/").filter(Boolean).forEach(n=>{ a=join(a,n); h+=` <span style="color:#444">/</span> <a data-p="${esc(a)}">${esc(n)}</a>`; });
+  $("#crumb").innerHTML=h;
+  $("#crumb").querySelectorAll("a[data-p]").forEach(e=>e.onclick=()=>go(e.dataset.p));
+}
+function render(){
+  shown=items.filter(i=>(filt==="all"||i.dir||catLabel(i)===filt)&&i.name.toLowerCase().includes(q));
+  const g=$("#grid"); g.className=view;
+  if(view==="grid"){
+    g.innerHTML=shown.map((i,k)=>{
+      const ic=i.dir?"📁":{1:"🎬",2:"🎵",3:"🖼️"}[i.cat]||"📄";
+      const thumbUrl=i.thumb?`/proxy/u?u=${encodeURIComponent(i.thumb)}`:"";
+      const thumbImg=i.thumb?`<img src="${thumbUrl}" loading="lazy">`:`<div class="emoji">${ic}</div>`;
+      const badge=i.cat===1?`<span class="badge">Video</span>`:i.cat===3?`<span class="badge">Gambar</span>`:"";
+      return `<div class="item ${sel.has(i.path)?"selected":""}" data-k="${k}">
+        <input type="checkbox" ${sel.has(i.path)?"checked":""}>
+        <div class="item-thumb">${thumbImg}${badge}</div>
+        <div class="item-body">
+          <div class="item-name">${esc(i.name)}</div>
+          <div class="item-meta">${i.dir?"Folder":fmt(i.size)}</div>
+        </div>
+      </div>`;
+    }).join("")||`<div class="empty">Tidak ada file</div>`;
+  } else {
+    g.innerHTML=shown.map((i,k)=>{
+      const ic=i.dir?"📁":{1:"🎬",2:"🎵",3:"🖼️"}[i.cat]||"📄";
+      const thumbUrl=i.thumb?`/proxy/u?u=${encodeURIComponent(i.thumb)}`:"";
+      const thumbImg=i.thumb?`<img src="${thumbUrl}" loading="lazy">`:`<div class="emoji">${ic}</div>`;
+      const badge=i.cat===1?`<span class="badge">Video</span>`:i.cat===3?`<span class="badge">Gambar</span>`:"";
+      return `<div class="item list ${sel.has(i.path)?"selected":""}" data-k="${k}">
+        <input type="checkbox" ${sel.has(i.path)?"checked":""}>
+        <div class="item-thumb">${thumbImg}${badge}</div>
+        <div class="item-body">
+          <div class="item-name">${esc(i.name)}</div>
+          <div class="item-meta">${i.dir?"Folder":fmt(i.size)}</div>
+        </div>
+      </div>`;
+    }).join("")||`<div class="empty">Tidak ada file</div>`;
+  }
+}
+$("#grid").onclick=e=>{
+  const el=e.target.closest(".item"); if(!el)return;
+  const i=shown[+el.dataset.k];
+  if(e.target.tagName==="INPUT" || sel.size){
+    sel.has(i.path)?sel.delete(i.path):sel.add(i.path); render(); return;
+  }
+  if(i.dir)go(i.path);
+  else if(i.cat>=1 && i.cat<=3){
+    media=shown.filter(x=>!x.dir && x.cat>=1 && x.cat<=3);
+    vi=media.indexOf(i); play();
+  }else toast("Tipe file belum didukung pemutar");
+};
+function selAll(){ shown.forEach(i=>sel.add(i.path)); render(); }
+function live(){ clearInterval(liveTimer); if($("#lv").checked) liveTimer=setInterval(()=>{ if(!$("#app").hidden && $("#viewer").hidden) go(cwd,true); },15000); }
+async function op(opera, fl){
+  const r=await post("/api/op",{opera,filelist:fl});
+  toast(r.ok?"Berhasil":"Gagal (errno "+r.errno+")");
+  sel.clear(); go(cwd);
+}
+function ren(){ if(sel.size!==1)return toast("Pilih tepat 1 item"); const p=[...sel][0], o=p.split("/").pop(), n=prompt("Nama baru:",o); if(n&&n!==o)op("rename",[{path:p,newname:n}]); }
+function mv(o){ if(!sel.size)return toast("Pilih item dulu"); const d=prompt((o==="move"?"Pindah":"Salin")+" ke folder (path penuh):",cwd); if(d)op(o,[...sel].map(p=>({path:p,dest:d,newname:p.split("/").pop()}))); }
+function del(){ if(sel.size&&confirm("Hapus "+sel.size+" item?"))op("delete",[...sel]); else if(!sel.size)toast("Pilih item dulu"); }
+async function mk(){ const n=prompt("Nama folder baru:"); if(!n)return; const r=await post("/api/mkdir",{path:join(cwd,n)}); toast(r.ok?"Folder dibuat":"Gagal (errno "+r.errno+")"); go(cwd); }
+function closeV(){ if(hls){hls.destroy();hls=null} $("#viewer-content").replaceChildren(); $("#viewer").hidden=true; }
+function nav(d){ vi=(vi+d+media.length)%media.length; play(); }
+function spd(){ const m=$("#viewer-content video,#viewer-content audio"); if(m)m.playbackRate=+$("#vs").value; }
+function play(){
+  const i=media[vi]; if(hls){hls.destroy();hls=null}
+  $("#viewer").hidden=false; $("#viewer-title").textContent=i.name;
+  const fp="/proxy/file?path="+encodeURIComponent(i.path), c=$("#viewer-content");
+  $("#vq").hidden=$("#vs").hidden=i.cat===3;
+  if(i.cat===3){ c.innerHTML=`<img src="${fp}" style="max-width:100%;max-height:100vh">`; return; }
+  if(i.cat===2){ c.innerHTML=`<audio controls autoplay src="${fp}"></audio>`; return; }
+  const el=document.createElement("video"); el.controls=el.autoplay=el.playsInline=true;
+  el.onloadedmetadata=spd; el.onended=()=>nav(1); c.replaceChildren(el);
+  const k=$("#vq").value;
+  if(k!=="orig"){
+    const u="/proxy/hls?path="+encodeURIComponent(i.path)+"&q="+k;
+    if(window.Hls && Hls.isSupported()){
+      hls=new Hls(); hls.loadSource(u); hls.attachMedia(el);
+      hls.on(Hls.Events.ERROR,(e,d)=>{ if(d.fatal){ toast("HLS gagal, memakai file asli"); $("#vq").value="orig"; play(); } });
+    }else el.src=u;
+  }else el.src=fp;
+}
+document.addEventListener("keydown",e=>{ if($("#viewer").hidden)return; if(e.key==="Escape")closeV(); if(e.key==="ArrowRight")nav(1); if(e.key==="ArrowLeft")nav(-1); });
+
+api("/api/me").then(r=>r.ok?showApp(r.quota):showLogin()).catch(showLogin);
+</script>
+</body>
+</html>
