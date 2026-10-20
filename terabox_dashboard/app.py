@@ -53,7 +53,7 @@ def create_app(settings: Optional[Settings] = None) -> Flask:
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https:; "
-            "media-src 'self' https:; "
+            "media-src 'self' https: blob:; "
             "connect-src 'self' https:; "
             "font-src 'self' data:",
         )

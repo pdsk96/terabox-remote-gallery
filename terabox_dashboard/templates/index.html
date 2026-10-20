@@ -362,7 +362,7 @@ function closeV(){ if(hls){hls.destroy();hls=null} $("#viewer-content").replaceC
 function nav(d){ vi=(vi+d+media.length)%media.length; play(); }
 function spd(){ const m=$("#viewer-content video,#viewer-content audio"); if(m){ const r=+$("#vs").value; if(isFinite(r))m.playbackRate=r; } }
 function play(){
-  const i=media[vi]; if(hls){hls.destroy();hls=null}
+  const i=media[vi]; if(!i){ closeV(); return; } if(hls){hls.destroy();hls=null}
   $("#viewer").hidden=false; $("#viewer-title").textContent=i.name;
   const fp="/proxy/file?path="+encodeURIComponent(i.path), c=$("#viewer-content");
   $("#vq").hidden=$("#vs").hidden=i.cat===3;
