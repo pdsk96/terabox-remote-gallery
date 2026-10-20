@@ -47,15 +47,14 @@ def create_app(settings: Optional[Settings] = None) -> Flask:
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         # CSP: allow inline script (frontend) + hls.js CDN
-        response.headers.setdefault(
-            "Content-Security-Policy",
+        response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https:; "
             "media-src 'self' https: blob:; "
             "connect-src 'self' https:; "
-            "font-src 'self' data:",
+            "font-src 'self' data:"
         )
         return response
 
