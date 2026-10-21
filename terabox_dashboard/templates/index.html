@@ -103,20 +103,6 @@ header{
 }
 .actions-row button.primary{background:var(--accent);color:#fff}
 
-/* ---------- Breadcrumb ---------- */
-.crumb-bar{
-  display:flex;align-items:center;gap:6px;padding:8px 12px 0 12px;flex:none;
-  background:var(--surface);border-bottom:1px solid var(--border)
-}
-.btn-back{
-  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
-  width:36px;height:36px;flex:none;border-radius:9px;font-size:18px;
-  display:flex;align-items:center;justify-content:center;line-height:1
-}
-.btn-back:disabled{opacity:.35;cursor:default}
-.crumb{padding:8px 16px 10px 6px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;flex:1;min-width:0}
-.crumb a{color:var(--accent);padding:0 4px}
-
 /* ---------- Grid / List ---------- */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .list{display:flex;flex-direction:column;gap:8px}
@@ -297,16 +283,23 @@ header{
   border:1px solid rgba(255,255,255,.1);max-width:92vw;text-align:center
 }
 
-/* ---------- Bottom nav ---------- */
-.bottom-nav{
-  background:var(--surface);border-top:1px solid var(--border);
-  padding:8px 12px;display:flex;justify-content:space-between;gap:8px;flex:none
+/* ---------- Navigasi file: back / up (compact) ---------- */
+.crumb-bar{
+  display:flex;align-items:center;gap:4px;padding:6px 10px;flex:none;
+  background:var(--surface);border-bottom:1px solid var(--border)
 }
-.bottom-nav button{
-  flex:1;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
-  padding:8px;border-radius:10px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:44px
+.nav-btn{
+  background:transparent;border:1px solid transparent;color:var(--text);
+  width:30px;height:30px;flex:none;border-radius:8px;font-size:16px;line-height:1;
+  display:flex;align-items:center;justify-content:center
 }
-.bottom-nav .dot{font-size:10px}
+.nav-btn:hover:not(:disabled){background:var(--surface-elev);border-color:var(--border)}
+.nav-btn:disabled{opacity:.25;cursor:default}
+.crumb{
+  padding:0 6px;font-size:13px;color:var(--text-muted);
+  overflow-x:auto;white-space:nowrap;flex:1;min-width:0
+}
+.crumb a{color:var(--accent);padding:0 3px}
 
 .spinner{
   width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);
@@ -353,8 +346,8 @@ header{
 <!-- ============ TAB: FILE ============ -->
 <div class="panel" id="panel-files">
   <div class="crumb-bar">
-    <button class="btn-back" id="btn-back" onclick="goBack()" disabled title="Kembali ke folder sebelumnya">←</button>
-    <button class="btn-back" id="btn-up" onclick="goUp()" disabled title="Naik ke folder induk">↑</button>
+    <button class="nav-btn" id="btn-back" onclick="goBack()" disabled title="Kembali (Alt+←)">‹</button>
+    <button class="nav-btn" id="btn-up" onclick="goUp()" disabled title="Naik satu level (Alt+↑)">↑</button>
     <div class="crumb" id="crumb"></div>
   </div>
   <div class="toolbar">
@@ -416,12 +409,6 @@ header{
       <div id="sh-mine"></div>
     </div>
   </div>
-</div>
-
-<div class="bottom-nav">
-  <button onclick="nav(-1)">⏮<span class="dot">Sebelum</span></button>
-  <button onclick="closeV()">✖<span class="dot">Tutup</span></button>
-  <button onclick="nav(1)">⏭<span class="dot">Berikutnya</span></button>
 </div>
 
 </div><!-- /app -->
