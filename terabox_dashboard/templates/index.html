@@ -58,78 +58,102 @@ a{color:var(--accent);text-decoration:none}
 header{
   background:var(--surface);border-bottom:1px solid var(--border);z-index:20;flex:none
 }
-.header-wrap{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.header-wrap{padding:7px 12px;display:flex;flex-direction:column;gap:6px}
 .header-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.app-title{font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text)}
+.app-title{font-weight:700;font-size:15px;letter-spacing:-0.01em;color:var(--text)}
 .quota-row{width:100%;display:flex;align-items:center;gap:10px}
-#quota-text{font-size:13px;color:var(--text-muted);min-width:150px}
-.quota-bar{flex:1;height:6px;background:var(--surface-elev);border:1px solid var(--border);border-radius:3px;overflow:hidden}
+#quota-text{font-size:11.5px;color:var(--text-muted);min-width:130px}
+.quota-bar{flex:1;height:4px;background:var(--surface-elev);border:1px solid var(--border);border-radius:2px;overflow:hidden}
 .quota-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-hover))}
 .btn-logout{
   background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
-  padding:8px 12px;border-radius:8px;font-size:13px
+  padding:5px 10px;border-radius:8px;font-size:12px
 }
 
 /* ---------- Tab bar ---------- */
 .tabs{
   display:flex;background:var(--surface);border-bottom:1px solid var(--border);
-  padding:0 8px;flex:none;overflow-x:auto
+  padding:0 6px;flex:none;overflow-x:auto
 }
 .tabs button{
-  padding:11px 14px;font-size:14px;color:var(--text-muted);
-  border-bottom:2px solid transparent;white-space:nowrap;min-height:44px
+  padding:8px 12px;font-size:13px;color:var(--text-muted);
+  border-bottom:2px solid transparent;white-space:nowrap;min-height:38px
 }
 .tabs button.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
 
 /* ---------- Panel ---------- */
 .panel{flex:1;display:flex;flex-direction:column;min-height:0}
-.panel-scroll{flex:1;overflow:auto;padding:12px}
+.panel-scroll{flex:1;overflow:auto;padding:8px}
 .panel[hidden]{display:none!important}
 
-/* ---------- Toolbar ---------- */
-.toolbar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex:none}
-.search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-#q{flex:1;min-width:0;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
-.filter-sel,.sort-sel,.view-toggle{
+/* ---------- Toolbar (compact, single row) ---------- */
+.toolbar{
+  padding:6px 10px;background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:6px;flex:none;flex-wrap:wrap
+}
+.search-row{display:flex;gap:6px;align-items:center;flex:1;min-width:0}
+#q{
+  flex:1;min-width:60px;background:var(--surface-elev);border:1px solid var(--border);
+  color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px;height:34px
+}
+.icon-btn{
   background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
-  padding:8px 10px;border-radius:10px;font-size:13px;min-width:110px
+  width:34px;height:34px;flex:none;border-radius:8px;font-size:15px;line-height:1;
+  display:flex;align-items:center;justify-content:center
 }
-.live-wrap{display:flex;align-items:center;gap:8px}
-.live-wrap input{accent-color:var(--accent);width:18px;height:18px}
-.actions-row{display:flex;gap:6px;flex-wrap:wrap}
-.actions-row button{
-  flex:1;min-width:70px;background:var(--surface-elev);border:1px solid var(--border);
-  color:var(--text);padding:9px 10px;border-radius:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px
+.icon-btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.icon-btn:disabled{opacity:.3;cursor:default}
+.icon-btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.select-btn{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  height:34px;padding:0 6px;border-radius:8px;font-size:13px;max-width:96px
 }
-.actions-row button.primary{background:var(--accent);color:#fff}
+.filter-sel,.sort-sel,.view-toggle{display:none}
+
+/* dropdown menu aksi */
+.menu-wrap{position:relative;flex:none}
+.menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:184px;z-index:40;
+  background:var(--surface-elev);border:1px solid var(--border);border-radius:10px;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);padding:4px;display:none;flex-direction:column
+}
+.menu.open{display:flex}
+.menu button{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  padding:9px 10px;border-radius:7px;font-size:13px;color:var(--text);min-height:38px
+}
+.menu button:hover{background:var(--surface)}
+.menu button.danger{color:var(--danger)}
+.menu .sep{height:1px;background:var(--border);margin:4px 6px}
 
 /* ---------- Grid / List ---------- */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
-.list{display:flex;flex-direction:column;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
 .item{
-  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
   overflow:hidden;display:flex;flex-direction:column;position:relative;transition:transform .1s,border-color .1s
 }
 .item:active{transform:scale(0.98)}
 .item.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,140,255,.2)}
-.item input{position:absolute;top:10px;left:10px;width:20px;height:20px;accent-color:var(--accent);z-index:3}
+.item input{position:absolute;top:6px;left:6px;width:18px;height:18px;accent-color:var(--accent);z-index:3}
 .item-thumb{
   aspect-ratio:1;position:relative;background:#0f131a;
   display:flex;align-items:center;justify-content:center;overflow:hidden
 }
 .item-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.item-thumb .emoji{font-size:42px;line-height:1}
+.item-thumb .emoji{font-size:30px;line-height:1}
 .item-thumb .badge{
-  position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.6);
-  color:#fff;font-size:10px;padding:2px 6px;border-radius:4px
+  position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.6);
+  color:#fff;font-size:9px;padding:1px 4px;border-radius:3px
 }
-.item-body{padding:10px;flex:1;display:flex;flex-direction:column;gap:4px}
-.item-name{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.item-meta{font-size:11px;color:var(--text-muted)}
-.list .item{flex-direction:row;height:72px}
-.list .item-thumb{width:60px;height:60px;flex-shrink:0;border-radius:10px}
-.list .item-thumb .emoji{font-size:26px}
-.list .item-body{padding:8px 12px}
+.item-body{padding:6px 7px;flex:1;display:flex;flex-direction:column;gap:2px}
+.item-name{font-size:11.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+.item-meta{font-size:10px;color:var(--text-muted)}
+.list{display:flex;flex-direction:column;gap:6px}
+.list .item{flex-direction:row;height:56px}
+.list .item-thumb{width:44px;height:44px;flex-shrink:0;border-radius:8px}
+.list .item-thumb .emoji{font-size:20px}
+.list .item-body{padding:6px 10px}
+.list .item-name{-webkit-line-clamp:1}
 .empty{padding:40px 16px;text-align:center;color:var(--text-muted);font-size:14px}
 
 /* ---------- Channel: sub tabs ---------- */
@@ -285,7 +309,7 @@ header{
 
 /* ---------- Navigasi file: back / up (compact) ---------- */
 .crumb-bar{
-  display:flex;align-items:center;gap:4px;padding:6px 10px;flex:none;
+  display:flex;align-items:center;gap:4px;padding:4px 8px;flex:none;
   background:var(--surface);border-bottom:1px solid var(--border)
 }
 .nav-btn{
@@ -307,6 +331,33 @@ header{
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+
+/* ---------- Breakpoint: makin lebar layar, makin banyak kolom ---------- */
+@media (min-width:420px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+}
+@media (min-width:620px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px}
+  .item-name{font-size:12px}
+  .item-thumb .emoji{font-size:34px}
+}
+@media (min-width:900px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:11px}
+  .item-name{font-size:12.5px}
+  .item-thumb .emoji{font-size:38px}
+}
+@media (min-width:1200px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(152px,1fr))}
+}
+@media (max-width:400px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px}
+  .item-name{font-size:11px}
+  .item-thumb .emoji{font-size:26px}
+  .toolbar{padding:5px 8px;gap:5px}
+  #q{font-size:12.5px;padding:6px 9px}
+  .icon-btn{width:32px;height:32px;font-size:14px}
+  .select-btn{height:32px;font-size:12px}
+}
 </style>
 </head>
 <body>
@@ -352,28 +403,43 @@ header{
   </div>
   <div class="toolbar">
     <div class="search-row">
-      <input id="q" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
+      <input id="q" type="search" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
       <select id="ft" class="filter-sel" onchange="filt=this.value;render()">
         <option value="all">Semua</option><option value="video">Video</option><option value="image">Gambar</option><option value="audio">Audio</option>
       </select>
       <select id="sort" class="sort-sel" onchange="go(cwd)">
         <option value="time">Terbaru</option><option value="name">Nama</option><option value="size">Ukuran</option>
       </select>
-      <button class="view-toggle" onclick="view=view==='grid'?'list':'grid';render()" title="Ubah tampilan">
-        <span id="view-icon">▦</span>
+      <button class="icon-btn" onclick="view=view==='grid'?'list':'grid';render()" title="Ubah tampilan" id="view-toggle">
+        ▦
       </button>
     </div>
-    <div class="live-wrap">
-      <input type="checkbox" id="lv" onchange="live()" checked>
-      <label for="lv" style="margin:0;font-size:13px;color:var(--text-muted)">Refresh otomatis</label>
+    <div class="menu-wrap">
+      <button class="icon-btn" onclick="toggleMenu('f-menu')" title="Filter &amp; tampilan">☰</button>
+      <div class="menu" id="f-menu">
+        <button onclick="setFilter('all')">📦 Semua tipe</button>
+        <button onclick="setFilter('video')">🎬 Video</button>
+        <button onclick="setFilter('image')">🖼️ Gambar</button>
+        <button onclick="setFilter('audio')">🎵 Audio</button>
+        <div class="sep"></div>
+        <button onclick="setSort('time')">🕒 Terbaru</button>
+        <button onclick="setSort('name')">🔤 Nama</button>
+        <button onclick="setSort('size')">📐 Ukuran</button>
+        <div class="sep"></div>
+        <button onclick="toggleLive()">🔄 Refresh otomatis</button>
+      </div>
     </div>
-    <div class="actions-row">
-      <button onclick="mk()">📁 Baru</button>
-      <button onclick="ren()">✏️ Ubah nama</button>
-      <button onclick="mv('move')">➡️ Pindah</button>
-      <button onclick="mv('copy')">📋 Salin</button>
-      <button onclick="del()">🗑️ Hapus</button>
-      <button onclick="selAll()">Pilih semua</button>
+    <div class="menu-wrap">
+      <button class="icon-btn" onclick="toggleMenu('a-menu')" title="Aksi">⋯</button>
+      <div class="menu" id="a-menu">
+        <button onclick="mk()">📁 Buat folder</button>
+        <button onclick="ren()">✏️ Ubah nama</button>
+        <button onclick="mv('move')">➡️ Pindahkan</button>
+        <button onclick="mv('copy')">📋 Salin</button>
+        <button onclick="del()" class="danger">🗑️ Hapus</button>
+        <div class="sep"></div>
+        <button onclick="selAll()">☑️ Pilih semua</button>
+      </div>
     </div>
   </div>
   <div class="panel-scroll">
@@ -917,6 +983,7 @@ function crumb(){
 function render(){
   shown=items.filter(i=>(filt==="all"||i.dir||catLabel(i)===filt)&&i.name.toLowerCase().includes(q));
   const g=$("#grid"); g.className=view;
+  syncToolbar();
   if(view==="grid"){
     g.innerHTML=shown.map((i,k)=>{
       const ic=i.dir?"📁":{1:"🎬",2:"🎵",3:"🖼️"}[i.cat]||"📄";
@@ -962,7 +1029,47 @@ $("#grid").onclick=e=>{
   }else toast("Tipe file belum didukung pemutar");
 };
 function selAll(){ shown.forEach(i=>sel.add(i.path)); render(); }
-function live(){ clearInterval(liveTimer); if($("#lv").checked) liveTimer=setInterval(()=>{ if(!$("#app").hidden && $("#viewer").hidden && tab==="files") go(cwd,true); },15000); }
+
+// ---------- Toolbar ringkas: menu, filter, sort, live ----------
+let liveOn = true;
+function toggleMenu(id){
+  const m = document.getElementById(id);
+  if(!m) return;
+  const wasOpen = m.classList.contains("open");
+  closeMenus();
+  if(!wasOpen) m.classList.add("open");
+}
+function closeMenus(){ $$(".menu").forEach(m=>m.classList.remove("open")); }
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".menu-wrap")) closeMenus();
+});
+function setFilter(v){
+  filt = v;
+  const sel = $("#ft"); if(sel) sel.value = v;
+  closeMenus(); render();
+}
+function setSort(v){
+  const sel = $("#sort"); if(sel) sel.value = v;
+  closeMenus(); go(cwd);
+}
+function toggleLive(){
+  liveOn = !liveOn;
+  closeMenus();
+  live();
+  toast(liveOn ? "Refresh otomatis: aktif" : "Refresh otomatis: mati");
+}
+function live(){
+  clearInterval(liveTimer);
+  if(liveOn) liveTimer = setInterval(()=>{
+    if(!$("#app").hidden && $("#viewer").hidden && tab==="files") go(cwd,true);
+  },15000);
+}
+function syncToolbar(){
+  const vt = $("#view-toggle");
+  if(vt) vt.textContent = view==="grid" ? "▦" : "☰";
+  const lvBtn = $$("#f-menu button").find(b=>b.textContent.includes("Refresh otomatis"));
+  if(lvBtn) lvBtn.classList.toggle("on", liveOn);
+}
 async function op(opera, fl){
   const r=await post("/api/op",{opera,filelist:fl});
   toast(r.ok?"Berhasil":"Gagal (errno "+r.errno+")");
