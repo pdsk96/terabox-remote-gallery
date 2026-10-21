@@ -104,7 +104,17 @@ header{
 .actions-row button.primary{background:var(--accent);color:#fff}
 
 /* ---------- Breadcrumb ---------- */
-.crumb{padding:8px 16px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;padding-bottom:10px;flex:none}
+.crumb-bar{
+  display:flex;align-items:center;gap:6px;padding:8px 12px 0 12px;flex:none;
+  background:var(--surface);border-bottom:1px solid var(--border)
+}
+.btn-back{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  width:36px;height:36px;flex:none;border-radius:9px;font-size:18px;
+  display:flex;align-items:center;justify-content:center;line-height:1
+}
+.btn-back:disabled{opacity:.35;cursor:default}
+.crumb{padding:8px 16px 10px 6px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;flex:1;min-width:0}
 .crumb a{color:var(--accent);padding:0 4px}
 
 /* ---------- Grid / List ---------- */
@@ -342,7 +352,11 @@ header{
 
 <!-- ============ TAB: FILE ============ -->
 <div class="panel" id="panel-files">
-  <div class="crumb" id="crumb"></div>
+  <div class="crumb-bar">
+    <button class="btn-back" id="btn-back" onclick="goBack()" disabled title="Kembali ke folder sebelumnya">←</button>
+    <button class="btn-back" id="btn-up" onclick="goUp()" disabled title="Naik ke folder induk">↑</button>
+    <div class="crumb" id="crumb"></div>
+  </div>
   <div class="toolbar">
     <div class="search-row">
       <input id="q" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
@@ -454,6 +468,9 @@ let hls = null, vi = 0, media = [];
 let tab = "files", chSub = "feed", chKind = "99", chCategory = "", chPage = 1, chItems = [];
 let chView = "grid", chFollows = [], chCats = [], chCountries = [];
 let shareSel = new Set(), shareCtx = null, destPath = "/";
+
+// history penjelajah file
+let hist = ["/"], histIdx = 0;
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -866,7 +883,7 @@ function pickFolderConfirm(){
   if(holder) holder.remove();
 }
 
-// ================= FILE TAB (lama) =================
+// ================= FILE TAB =================
 async function go(p, silent=false){
   const r=await api("/api/list?dir="+encodeURIComponent(p)+"&order="+$("#sort").value);
   if(!r.ok){ if(!silent)toast("Gagal memuat: "+r.error); return; }
@@ -874,13 +891,41 @@ async function go(p, silent=false){
   const s=p+r.items.map(i=>i.path+i.mtime+i.size).join("|");
   if(silent && s===sig && p===cwd)return;
   if(p!==cwd)sel.clear();
-  cwd=p; sig=s; items=r.items; crumb(); render();
+  cwd=p; sig=s; items=r.items;
+  if(!silent) pushHistory(p);
+  crumb(); render();
+}
+function pushHistory(p){
+  if(hist[histIdx]===p) return;
+  hist = hist.slice(0, histIdx+1);
+  hist.push(p);
+  histIdx = hist.length-1;
+  if(hist.length>100){ hist.shift(); histIdx--; }
+  updateBackBtn();
+}
+function updateBackBtn(){
+  const b = $("#btn-back");
+  if(b) b.disabled = histIdx<=0;
+  const u = $("#btn-up");
+  if(u) u.disabled = cwd==="/";
+}
+function goBack(){
+  if(histIdx<=0) return;
+  histIdx--;
+  updateBackBtn();
+  go(hist[histIdx], true);
+}
+function goUp(){
+  if(cwd==="/") return;
+  const parent = cwd.split("/").slice(0,-1).join("/") || "/";
+  go(parent);
 }
 function crumb(){
   let a="/", h=`<a onclick="go('/')">🏠 Beranda</a>`;
   cwd.split("/").filter(Boolean).forEach(n=>{ a=join(a,n); h+=` <span style="color:#444">/</span> <a data-p="${esc(a)}">${esc(n)}</a>`; });
   $("#crumb").innerHTML=h;
   $("#crumb").querySelectorAll("a[data-p]").forEach(e=>e.onclick=()=>go(e.dataset.p));
+  updateBackBtn();
 }
 function render(){
   shown=items.filter(i=>(filt==="all"||i.dir||catLabel(i)===filt)&&i.name.toLowerCase().includes(q));
@@ -961,7 +1006,21 @@ function play(){
     }else el.src=u;
   }else el.src=fp;
 }
-document.addEventListener("keydown",e=>{ if($("#viewer").hidden)return; if(e.key==="Escape")closeV(); if(e.key==="ArrowRight")nav(1); if(e.key==="ArrowLeft")nav(-1); });
+document.addEventListener("keydown",e=>{
+  if($("#viewer").hidden)return;
+  if(e.key==="Escape")closeV();
+  if(e.key==="ArrowRight")nav(1);
+  if(e.key==="ArrowLeft")nav(-1);
+});
+// Shortcut penjelajah file: Backspace / Alt+Left = kembali, Alt+Up = naik level
+document.addEventListener("keydown",e=>{
+  if(tab!=="files" || !$("#viewer").hidden) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag==="input" || tag==="textarea" || tag==="select") return;
+  if(e.altKey && e.key==="ArrowLeft"){ e.preventDefault(); goBack(); }
+  else if(e.altKey && e.key==="ArrowUp"){ e.preventDefault(); goUp(); }
+  else if(e.key==="Backspace" && cwd!=="/"){ e.preventDefault(); goUp(); }
+});
 
 api("/api/me").then(r=>r.ok?showApp(r.quota):showLogin()).catch(showLogin);
 </script>
