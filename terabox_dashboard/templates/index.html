@@ -796,7 +796,7 @@ async function openSaveModal(ctx){
 async function doSave(shareId, uk, fsIds){
   const path = ($("#dest-path")?.value || "/").trim() || "/";
   const ondup = $("#dest-ondup")?.value || "newcopy";
-  const ids = JSON.parse(fsIds);
+  const ids = Array.isArray(fsIds) ? fsIds : JSON.parse(fsIds);
   if(!shareId){
     toast("Share ID tidak tersedia untuk item ini");
     return;
