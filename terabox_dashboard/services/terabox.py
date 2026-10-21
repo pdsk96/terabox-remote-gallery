@@ -20,6 +20,7 @@ class TeraBoxClient:
 
     def __init__(self, ndus: str, settings: "Settings") -> None:
         self._settings = settings
+        self._ndus = ndus
         self._session = requests.Session()
         self._session.headers.update({
             "User-Agent": USER_AGENT,
@@ -192,6 +193,11 @@ class TeraBoxClient:
         return resp.text
 
     # ----------------------------- properties -------------------------------
+    @property
+    def ndus(self) -> str:
+        """Cookie ndus (untuk persistensi session antar restart)."""
+        return self._ndus
+
     @property
     def js_token(self) -> str:
         return self._js_token

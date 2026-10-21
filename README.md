@@ -65,19 +65,24 @@ terabox_dashboard/
 ├── README.md             # Dokumentasi
 ├── services/
 │   ├── __init__.py
-│   ├── session.py        # Server-side session store (TTL, cleanup bg thread)
-│   └── terabox.py        # TeraBox API client (auth, quota, list, ops, dlink, HLS)
+│   ├── session.py        # Server-side session store (TTL, cleanup bg thread, persist disk)
+│   ├── terabox.py        # TeraBox API client (auth, quota, list, ops, dlink, HLS)
+│   ├── resource.py       # Channel feed: hot recommend, list, search, share resolve/transfer, favor
+│   └── follows.py        # Daftar channel yang diikuti (lokal, persists disk)
 ├── routes/
 │   ├── __init__.py       # Blueprint registration
 │   ├── auth.py           # /api/login, /api/logout, /api/me
 │   ├── files.py          # /api/list, /api/op, /api/mkdir
-│   └── proxy.py          # /proxy/u, /proxy/file, /proxy/hls
+│   ├── proxy.py          # /proxy/u, /proxy/file, /proxy/hls
+│   └── channels.py       # Channel: /api/channel/feed, /categories, /search, /follows,
+│   │                     # /follow, /unfollow, /share/resolve, /share/mine,
+│   │                     # /share/save, /share/status, /like, /likes
 ├── utils/
 │   ├── __init__.py
 │   ├── helpers.py        # fmt_size, norm_file, rewrite_m3u8, join_path
 │   └── security.py       # SSRF guard, parse_ndus, normalize_path, validate_operation
 └── templates/
-    └── index.html        # Frontend (Vanilla JS + hls.js CDN, mobile-responsive)
+    └── index.html        # Frontend (Vanilla JS + hls.js CDN, mobile-responsive, 3 tab)
 ```
 
 ## 🌐 API Endpoints
@@ -94,6 +99,43 @@ terabox_dashboard/
 | GET | `/proxy/file` | Proxy direct download link (`dlink`) |
 | GET | `/proxy/hls` | Proxy manifest HLS (`path`, `q=480\|720\|1080`) |
 | GET | `/healthz` | Health check |
+
+## 📺 Tab Channel — Feed Konten & Simpan Share
+
+Tab Channel menampilkan feed konten publik TeraBox dan memungkinkan menyimpan (transfer) file dari share orang lain ke drive Anda sendiri — semua melalui server-to-server, tidak perlu download ke perangkat.
+
+| Method | Path | Deskripsi |
+|--------|------|-----------|
+| GET | `/api/channel/feed` | Feed konten (`kind`, `category`, `page`, `count`, `scope`) |
+| GET | `/api/channel/categories` | Daftar kategori (per country) + channel bawaan |
+| GET | `/api/channel/countries` | Negara yang punya konten feed |
+| GET | `/api/channel/search` | Cari konten (`q`, `count`) |
+| GET | `/api/channel/search/suggest` | Saran pencarian agregat (`q`) |
+| GET | `/api/channel/search/history` | Riwayat pencarian |
+| POST | `/api/channel/search/history/clear` | Hapus riwayat pencarian |
+| GET | `/api/channel/follows` | Channel yang diikuti |
+| POST | `/api/channel/follow` | Ikuti channel (`name`, `link`, `share_id`, `uk`) |
+| POST | `/api/channel/unfollow` | Berhenti mengikuti (`name`) |
+| GET | `/api/channel/share/resolve` | Resolve share link → daftar file (`url`) |
+| GET | `/api/channel/share/mine` | Share link milik sendiri (`page`, `num`) |
+| POST | `/api/channel/share/save` | Simpan file share ke drive (`share_id`, `uk`, `fs_ids`, `path`, `ondup`) |
+| GET | `/api/channel/share/status` | Cek status transfer (`sid`, `suk`) |
+| POST | `/api/channel/like` | Like/unlike resource (`fs_id`, `flag`) |
+| GET | `/api/channel/likes` | Item yang sudah di-like |
+
+### Sub-fungsi Channel
+
+| Sub-tab | Fungsi |
+|---------|--------|
+| **Feed** | Konten publik TeraBox (film/series/video), filter kategori, filter channel, next-page pagination |
+| **Diikuti** | Channel uploader yang Anda ikuti; feed difilter hanya milik mereka |
+| **Cari** | Pencarian konten + riwayat pencarian |
+| **Disukai** | Item yang sudah Anda like (`/api/favor/mark`) |
+| **Share** | Tempel share link → lihat isi → pilih file → simpan ke drive Anda |
+
+Tombol **⭐** pada setiap item untuk mengikuti/unfollow channel uploader. Tombol **💾 Simpan** memindahkan file dari share orang lain ke folder tujuan di drive Anda (server-to-server).
+
+**Catatan penting**: TeraBox tidak menyediakan endpoint "subscribe channel" resmi, daftar channel diikuti disimpan secara lokal di server dashboard (`~/.terabox_dashboard/follows.json`). Transfer share mungkin ditolak server (errno 120 = share kadaluarsa, errno 4 = konflik path) tergantung kebijakan akun pemilik share.
 
 ## ⚡ Optimasi Streaming Video
 
@@ -112,6 +154,8 @@ terabox_dashboard/
 | "Gagal ambil token: ..." | API domain berubah | Periksa `TERABOX_HOST`, default sudah `dm.1024terabox.com` |
 | Video tidak putar / buffer lama | HLS segment diblokir CORS | Pastikan proxy berjalan, periksa konsol browser (F12) |
 | Thumbnail tidak muncul | Gambar thumbnail tidak tersedia | TeraBox mungkin tidak menyediakan thumbnail untuk file tersebut |
+| Transfer share gagal (errno 17) | Share kadaluarsa / konflik path | Lihat detail `info[]` (errno 120 = share tidak tersedia, errno 4 = konflik path) |
+| Kategori kosong | Negara tidak punya konten resource | Pilih negara lain di dropdown negara (default otomatis pilih negara dengan konten) |
 
 ## ⚠️ Disclaimer
 

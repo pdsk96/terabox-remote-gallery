@@ -16,7 +16,7 @@
   --border:#2a323f;
   --danger:#ef5350;
   --success:#66bb6a;
-  --radius:12px;
+  --warn:#ffa726;
 }
 *,*:before,*:after{box-sizing:border-box}
 html{-webkit-tap-highlight-color:transparent}
@@ -54,10 +54,9 @@ a{color:var(--accent);text-decoration:none}
 .login-hint{font-size:12px;color:var(--text-muted);text-align:center;line-height:1.4}
 
 /* ---------- App shell ---------- */
-#app{display:flex;flex-direction:column;height:100vh}
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 header{
-  position:sticky;top:0;background:var(--surface);
-  border-bottom:1px solid var(--border);z-index:20;backdrop-filter:blur(8px)
+  background:var(--surface);border-bottom:1px solid var(--border);z-index:20;flex:none
 }
 .header-wrap{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
 .header-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -71,8 +70,24 @@ header{
   padding:8px 12px;border-radius:8px;font-size:13px
 }
 
+/* ---------- Tab bar ---------- */
+.tabs{
+  display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 8px;flex:none;overflow-x:auto
+}
+.tabs button{
+  padding:11px 14px;font-size:14px;color:var(--text-muted);
+  border-bottom:2px solid transparent;white-space:nowrap;min-height:44px
+}
+.tabs button.active{color:var(--text);border-bottom-color:var(--accent);font-weight:600}
+
+/* ---------- Panel ---------- */
+.panel{flex:1;display:flex;flex-direction:column;min-height:0}
+.panel-scroll{flex:1;overflow:auto;padding:12px}
+.panel[hidden]{display:none!important}
+
 /* ---------- Toolbar ---------- */
-.toolbar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;z-index:10}
+.toolbar{padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex:none}
 .search-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 #q{flex:1;min-width:0;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-size:14px}
 .filter-sel,.sort-sel,.view-toggle{
@@ -89,16 +104,11 @@ header{
 .actions-row button.primary{background:var(--accent);color:#fff}
 
 /* ---------- Breadcrumb ---------- */
-.crumb{padding:8px 16px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;padding-bottom:10px}
+.crumb{padding:8px 16px;font-size:13px;color:var(--text-muted);overflow-x:auto;white-space:nowrap;padding-bottom:10px;flex:none}
 .crumb a{color:var(--accent);padding:0 4px}
 
 /* ---------- Grid / List ---------- */
-#main{flex:1;overflow:auto;padding:12px}
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
-  gap:12px
-}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .list{display:flex;flex-direction:column;gap:8px}
 .item{
   background:var(--surface);border:1px solid var(--border);border-radius:12px;
@@ -126,13 +136,138 @@ header{
 .list .item-body{padding:8px 12px}
 .empty{padding:40px 16px;text-align:center;color:var(--text-muted);font-size:14px}
 
-/* ---------- Viewer ---------- */
-#viewer{
-  position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column
+/* ---------- Channel: sub tabs ---------- */
+.subtabs{
+  display:flex;gap:6px;padding:10px 12px;overflow-x:auto;flex:none;
+  background:var(--surface);border-bottom:1px solid var(--border)
 }
+.subtabs button{
+  padding:8px 13px;border-radius:20px;font-size:13px;white-space:nowrap;
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text-muted);min-height:36px
+}
+.subtabs button.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+/* ---------- Channel: chips ---------- */
+.chips{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;flex:none;background:var(--surface);border-bottom:1px solid var(--border)}
+.chips button{
+  padding:7px 12px;border-radius:18px;font-size:12px;white-space:nowrap;
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text-muted);min-height:34px
+}
+.chips button.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+/* ---------- Channel: card ---------- */
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.ch-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;display:flex;flex-direction:column
+}
+.ch-cover{aspect-ratio:16/10;background:#0f131a;position:relative;overflow:hidden;cursor:pointer}
+.ch-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.ch-cover .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px}
+.ch-cover .dur{
+  position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,.7);
+  color:#fff;font-size:10px;padding:1px 5px;border-radius:3px
+}
+.ch-cover .kind{
+  position:absolute;top:5px;left:5px;background:rgba(0,0,0,.7);
+  color:#fff;font-size:10px;padding:1px 5px;border-radius:3px
+}
+.ch-body{padding:10px;display:flex;flex-direction:column;gap:6px;flex:1}
+.ch-title{font-size:13px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ch-chan{font-size:11px;color:var(--accent);display:flex;align-items:center;gap:4px;cursor:pointer}
+.ch-chan .dot{width:5px;height:5px;border-radius:50%;background:var(--success);flex:none}
+.ch-meta{font-size:10px;color:var(--text-muted)}
+.ch-actions{display:flex;gap:5px;margin-top:auto}
+.ch-actions button{
+  flex:1;padding:7px 4px;border-radius:8px;font-size:11px;
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  min-height:34px;display:flex;align-items:center;justify-content:center;gap:3px
+}
+.ch-actions button.save{background:var(--accent);border-color:var(--accent);color:#fff}
+.ch-actions button.filled{color:var(--accent)}
+
+/* ---------- Channel: list rows ---------- */
+.ch-list{display:flex;flex-direction:column;gap:8px}
+.ch-row{
+  display:flex;gap:10px;background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;padding:8px;align-items:center
+}
+.ch-row .ch-cover{width:92px;height:60px;flex:none;border-radius:8px;aspect-ratio:auto}
+.ch-row .ch-cover .placeholder{font-size:22px}
+.ch-row-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.ch-row-actions{display:flex;flex-direction:column;gap:4px;flex:none}
+.ch-row-actions button{
+  padding:6px 9px;border-radius:8px;font-size:11px;background:var(--surface-elev);
+  border:1px solid var(--border);color:var(--text);min-height:30px
+}
+.ch-row-actions button.save{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* ---------- Share panel ---------- */
+.share-box{
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:12px;display:flex;flex-direction:column;gap:10px;margin-bottom:12px
+}
+.share-box input{
+  width:100%;background:var(--surface-elev);border:1px solid var(--border);
+  color:var(--text);padding:11px 12px;border-radius:10px;font-size:14px
+}
+.share-box button{
+  background:var(--accent);color:#fff;padding:11px;border-radius:10px;
+  font-weight:600;font-size:14px
+}
+.share-file{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px
+}
+.share-file input{width:19px;height:19px;accent-color:var(--accent);flex:none}
+.share-file .sf-body{flex:1;min-width:0}
+.share-file .sf-name{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.share-file .sf-meta{font-size:11px;color:var(--text-muted)}
+
+/* ---------- Modal ---------- */
+#modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:80;
+  display:flex;align-items:flex-end;justify-content:center
+}
+.modal-card{
+  width:100%;max-width:520px;max-height:86vh;background:var(--surface);
+  border:1px solid var(--border);border-radius:16px 16px 0 0;
+  display:flex;flex-direction:column;overflow:hidden
+}
+.modal-head{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none
+}
+.modal-head h3{margin:0;font-size:15px;font-weight:600}
+.modal-body{padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.modal-foot{
+  padding:12px 16px;border-top:1px solid var(--border);
+  display:flex;gap:8px;flex:none
+}
+.modal-foot button{
+  flex:1;padding:12px;border-radius:10px;font-size:14px;
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);min-height:44px
+}
+.modal-foot button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.field-label{font-size:12px;color:var(--text-muted);margin-bottom:6px;display:block}
+.field-input{
+  width:100%;background:var(--surface-elev);border:1px solid var(--border);
+  color:var(--text);padding:11px 12px;border-radius:10px;font-size:14px
+}
+.folder-pick{
+  display:flex;gap:6px;align-items:center
+}
+.folder-pick .field-input{flex:1}
+.folder-pick button{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  padding:10px 12px;border-radius:10px;font-size:13px;min-height:42px
+}
+
+/* ---------- Viewer ---------- */
+#viewer{position:fixed;inset:0;background:#000;z-index:50;display:flex;flex-direction:column}
 .viewer-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;background:rgba(0,0,0,.6);z-index:2
+  padding:10px 14px;background:rgba(0,0,0,.6);z-index:2;gap:8px
 }
 .viewer-title{color:#fff;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .viewer-controls{display:flex;gap:6px;align-items:center}
@@ -147,21 +282,28 @@ header{
 /* ---------- Toast ---------- */
 #toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-  background:rgba(20,25,34,.9);color:#fff;padding:10px 16px;border-radius:24px;
-  font-size:13px;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)
+  background:rgba(20,25,34,.95);color:#fff;padding:10px 16px;border-radius:24px;
+  font-size:13px;z-index:90;box-shadow:0 4px 12px rgba(0,0,0,.4);
+  border:1px solid rgba(255,255,255,.1);max-width:92vw;text-align:center
 }
 
-/* ---------- Floating nav ---------- */
+/* ---------- Bottom nav ---------- */
 .bottom-nav{
-  position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);
-  padding:10px 16px;display:flex;justify-content:space-between;z-index:10
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:8px 12px;display:flex;justify-content:space-between;gap:8px;flex:none
 }
 .bottom-nav button{
   flex:1;background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
-  padding:10px;border-radius:10px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px
+  padding:8px;border-radius:10px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:44px
 }
-.bottom-nav button.primary{background:var(--accent);color:#fff}
 .bottom-nav .dot{font-size:10px}
+
+.spinner{
+  width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
 </style>
 </head>
 <body>
@@ -178,6 +320,7 @@ header{
 </div>
 
 <div id="app" hidden>
+
 <header>
   <div class="header-wrap">
     <div class="header-top">
@@ -191,37 +334,74 @@ header{
   </div>
 </header>
 
-<div class="crumb" id="crumb"></div>
+<nav class="tabs">
+  <button class="active" data-tab="files" onclick="switchTab('files')">📁 File</button>
+  <button data-tab="channel" onclick="switchTab('channel')">📺 Channel</button>
+  <button data-tab="share" onclick="switchTab('share')">🔗 Share</button>
+</nav>
 
-<div class="toolbar">
-  <div class="search-row">
-    <input id="q" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
-    <select id="ft" class="filter-sel" onchange="filt=this.value;render()">
-      <option value="all">Semua</option><option value="video">Video</option><option value="image">Gambar</option><option value="audio">Audio</option>
-    </select>
-    <select id="sort" class="sort-sel" onchange="go(cwd)">
-      <option value="time">Terbaru</option><option value="name">Nama</option><option value="size">Ukuran</option>
-    </select>
-    <button class="view-toggle" onclick="view=view==='grid'?'list':'grid';render()" title="Ubah tampilan">
-      <span id="view-icon">▦</span>
-    </button>
+<!-- ============ TAB: FILE ============ -->
+<div class="panel" id="panel-files">
+  <div class="crumb" id="crumb"></div>
+  <div class="toolbar">
+    <div class="search-row">
+      <input id="q" placeholder="Cari file…" oninput="q=this.value.toLowerCase();render()">
+      <select id="ft" class="filter-sel" onchange="filt=this.value;render()">
+        <option value="all">Semua</option><option value="video">Video</option><option value="image">Gambar</option><option value="audio">Audio</option>
+      </select>
+      <select id="sort" class="sort-sel" onchange="go(cwd)">
+        <option value="time">Terbaru</option><option value="name">Nama</option><option value="size">Ukuran</option>
+      </select>
+      <button class="view-toggle" onclick="view=view==='grid'?'list':'grid';render()" title="Ubah tampilan">
+        <span id="view-icon">▦</span>
+      </button>
+    </div>
+    <div class="live-wrap">
+      <input type="checkbox" id="lv" onchange="live()" checked>
+      <label for="lv" style="margin:0;font-size:13px;color:var(--text-muted)">Refresh otomatis</label>
+    </div>
+    <div class="actions-row">
+      <button onclick="mk()">📁 Baru</button>
+      <button onclick="ren()">✏️ Ubah nama</button>
+      <button onclick="mv('move')">➡️ Pindah</button>
+      <button onclick="mv('copy')">📋 Salin</button>
+      <button onclick="del()">🗑️ Hapus</button>
+      <button onclick="selAll()">Pilih semua</button>
+    </div>
   </div>
-  <div class="live-wrap">
-    <input type="checkbox" id="lv" onchange="live()" checked>
-    <label for="lv" style="margin:0;font-size:13px;color:var(--text-muted)">Refresh otomatis</label>
-  </div>
-  <div class="actions-row">
-    <button onclick="mk()">📁 Baru</button>
-    <button onclick="ren()">✏️ Ubah nama</button>
-    <button onclick="mv('move')">➡️ Pindah</button>
-    <button onclick="mv('copy')">📋 Salin</button>
-    <button onclick="del()">🗑️ Hapus</button>
-    <button onclick="selAll()">Pilih semua</button>
+  <div class="panel-scroll">
+    <div class="grid" id="grid"></div>
   </div>
 </div>
 
-<div id="main">
-  <div class="grid" id="grid"></div>
+<!-- ============ TAB: CHANNEL ============ -->
+<div class="panel" id="panel-channel" hidden>
+  <div class="subtabs">
+    <button class="active" data-sub="feed" onclick="switchSub('feed')">Feed</button>
+    <button data-sub="followed" onclick="switchSub('followed')">⭐ Diikuti</button>
+    <button data-sub="search" onclick="switchSub('search')">🔍 Cari</button>
+    <button data-sub="liked" onclick="switchSub('liked')">❤️ Disukai</button>
+  </div>
+  <div class="chips" id="ch-chips"></div>
+  <div class="panel-scroll" id="ch-scroll">
+    <div class="ch-grid" id="ch-grid"></div>
+  </div>
+</div>
+
+<!-- ============ TAB: SHARE ============ -->
+<div class="panel" id="panel-share" hidden>
+  <div class="panel-scroll">
+    <div class="share-box">
+      <label class="field-label">Tempel share link TeraBox (https://1024terabox.com/s/xxxx)</label>
+      <input id="sh-url" type="url" placeholder="https://1024terabox.com/s/1aBcDeF" autocomplete="off">
+      <button onclick="resolveShare()">Cek isi share</button>
+    </div>
+    <div id="sh-result"></div>
+    <div style="margin-top:20px">
+      <label class="field-label">Share link milik saya</label>
+      <div id="sh-mine"></div>
+    </div>
+  </div>
 </div>
 
 <div class="bottom-nav">
@@ -230,16 +410,18 @@ header{
   <button onclick="nav(1)">⏭<span class="dot">Berikutnya</span></button>
 </div>
 
+</div><!-- /app -->
+
 <div id="viewer" hidden>
   <div class="viewer-header">
     <div class="viewer-title" id="viewer-title"></div>
     <div class="viewer-controls">
       <select id="vq" onchange="play()">
-  <option value="orig">Asli</option>
-  <option value="480">HLS 480p</option>
-  <option value="720">HLS 720p</option>
-  <option value="1080">HLS 1080p</option>
-</select>
+        <option value="orig">Asli</option>
+        <option value="480">HLS 480p</option>
+        <option value="720">HLS 720p</option>
+        <option value="1080">HLS 1080p</option>
+      </select>
       <select id="vs" onchange="spd()"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
       <button onclick="closeV()">✖ Tutup</button>
     </div>
@@ -247,14 +429,31 @@ header{
   <div class="viewer-body" id="viewer-content"></div>
 </div>
 
+<div id="modal" hidden>
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="modal-title">Judul</h3>
+      <button onclick="closeModal()" style="background:transparent;color:var(--text-muted);font-size:20px;padding:0 6px;min-height:36px">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-foot" id="modal-foot"></div>
+  </div>
+</div>
+
 <div id="toast" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
 <script>
 const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
 let cwd = "/", items = [], shown = [], sel = new Set(), view = "grid", filt = "all", q = "", sig = "", liveTimer;
 let hls = null, vi = 0, media = [];
+
+// state tab channel
+let tab = "files", chSub = "feed", chKind = "99", chCategory = "", chPage = 1, chItems = [];
+let chView = "grid", chFollows = [], chCats = [], chCountries = [];
+let shareSel = new Set(), shareCtx = null, destPath = "/";
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -266,7 +465,8 @@ const api = async (u, o) => {
 };
 const post = (u, b) => api(u, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(b)});
 const fmt = n => { if(!n)return"-"; const u=["B","KB","MB","GB","TB"]; let i=0; while(n>=1024&&i<4){n/=1024;i++} return n.toFixed(i?1:0)+" "+u[i]; };
-const toast = m => { const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(t.h); t.h=setTimeout(()=>t.hidden=true,2500); };
+const fmtDur = s => { if(!s)return""; const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=s%60; return h?`${h}j ${m}m`:`${m}:${String(x).padStart(2,"0")}`; };
+const toast = m => { const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(t.h); t.h=setTimeout(()=>t.hidden=true,2600); };
 const catLabel = i => ({1:"video",2:"audio",3:"image"}[i.cat]||"");
 const join = (d,n) => (d==="/"?"":d)+"/"+n;
 
@@ -285,6 +485,387 @@ async function login(){
   }
 }
 async function logout(){ await post("/api/logout",{}); clearInterval(liveTimer); showLogin(); }
+
+// ================= TAB =================
+function switchTab(name){
+  tab = name;
+  $$(".tabs button").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+  $("#panel-files").hidden = name!=="files";
+  $("#panel-channel").hidden = name!=="channel";
+  $("#panel-share").hidden = name!=="share";
+  if(name==="channel"){ loadChannelMeta(); loadFeed(); }
+  if(name==="share"){ loadMyShares(); }
+}
+function switchSub(name){
+  chSub = name; chPage = 1;
+  $$(".subtabs button").forEach(b=>b.classList.toggle("active", b.dataset.sub===name));
+  $("#ch-chips").hidden = name!=="feed" && name!=="followed";
+  renderChips();
+  if(name==="liked"){ loadLiked(); }
+  else if(name==="search"){ renderChSearch(); }
+  else { loadFeed(); }
+}
+
+// ================= CHANNEL =================
+async function loadChannelMeta(){
+  if(chCats.length) return;
+  const r = await api("/api/channel/categories");
+  if(!r.ok) return;
+  chCats = r.categories||[];
+  chCountries = [r.country, ...(await api("/api/channel/countries").then(x=>x.countries||[]).catch(()=>[]))].filter(Boolean);
+  const f = await api("/api/channel/follows");
+  chFollows = (f.items||[]).map(x=>x.name);
+  renderChips();
+}
+function renderChips(){
+  const el = $("#ch-chips");
+  if(el.hidden) return;
+  let html = "";
+  if(chSub==="followed"){
+    if(!chFollows.length){ el.innerHTML = `<button class="active" disabled>Belum ada channel diikuti</button>`; return; }
+    html += `<button class="${chCategory===""?"active":""}" onclick="setCategory('')">Semua</button>`;
+    html += chFollows.map(n=>`<button class="${chCategory===n?"active":""}" onclick="setCategory('${esc(n)}')">${esc(n)}</button>`).join("");
+  } else {
+    html += `<button class="${chKind==="99"?"active":""}" onclick="setKind('99')">Semua</button>`;
+    html += `<button class="${chKind==="3"?"active":""}" onclick="setKind('3')">Movie/Series</button>`;
+    html += `<button class="${chKind==="2"?"active":""}" onclick="setKind('2')">Video</button>`;
+    if(chCats.length){
+      html += `<button class="${chCategory!==""?"active":""}" onclick="setCategory('')">Genre ▾</button>`;
+      html += chCats.slice(0,12).map(c=>`<button class="${chCategory===c?"active":""}" onclick="setCategory('${esc(c)}')">${esc(c)}</button>`).join("");
+    }
+  }
+  el.innerHTML = html;
+}
+function setKind(k){ chKind=k; chCategory=""; chPage=1; renderChips(); loadFeed(); }
+function setCategory(c){ chCategory=c; chPage=1; renderChips(); loadFeed(); }
+
+async function loadFeed(){
+  const g = $("#ch-grid");
+  g.innerHTML = `<div class="spinner"></div>`;
+  const scope = chSub==="followed" ? "followed" : "all";
+  let url = `/api/channel/feed?kind=${chKind}&category=${encodeURIComponent(chCategory)}&page=${chPage}&count=20&scope=${scope}`;
+  const r = await api(url);
+  if(!r.ok){ g.innerHTML = `<div class="empty">Gagal memuat feed</div>`; return; }
+  chItems = r.items||[];
+  renderChItems();
+}
+function renderChItems(){
+  const g = $("#ch-grid");
+  if(!chItems.length){
+    g.innerHTML = `<div class="empty">${chSub==="followed"?"Belum ada channel diikuti. Buka tab Feed, lalu tekan ⭐ pada channel yang Anda suka.":"Tidak ada konten"}</div>`;
+    return;
+  }
+  if(chView==="list"){
+    g.className = "ch-list";
+    g.innerHTML = chItems.map((it,k)=>`
+      <div class="ch-row" data-k="${k}">
+        <div class="ch-cover" onclick="openChItem(${k})">
+          ${it.thumb?`<img src="/proxy/u?u=${encodeURIComponent(it.thumb)}" loading="lazy">`
+                    :`<div class="placeholder">🎬</div>`}
+        </div>
+        <div class="ch-row-body">
+          <div class="ch-title">${esc(it.name)}</div>
+          <div class="ch-chan" onclick="followCh('${esc(it.channel)}',${it.share_id||0},${it.uk||0},'${esc(it.link)}')">
+            <span class="dot"></span>${esc(it.channel||"—")} ${chFollows.includes(it.channel)?"⭐":""}
+          </div>
+          <div class="ch-meta">${[it.year, it.liked_count?it.liked_count+" ❤️":""].filter(Boolean).join(" · ")}</div>
+        </div>
+        <div class="ch-row-actions">
+          <button class="save" onclick="saveChItem(${k})">💾 Simpan</button>
+        </div>
+      </div>`).join("");
+  } else {
+    g.className = "ch-grid";
+    g.innerHTML = chItems.map((it,k)=>`
+      <div class="ch-card" data-k="${k}">
+        <div class="ch-cover" onclick="openChItem(${k})">
+          ${it.thumb?`<img src="/proxy/u?u=${encodeURIComponent(it.thumb)}" loading="lazy">`
+                    :`<div class="placeholder">🎬</div>`}
+          ${it.kind===2?`<span class="kind">Video</span>`:`<span class="kind">Series</span>`}
+          ${it.duration?`<span class="dur">${fmtDur(it.duration)}</span>`:""}
+        </div>
+        <div class="ch-body">
+          <div class="ch-title">${esc(it.name)}</div>
+          <div class="ch-chan" onclick="followCh('${esc(it.channel)}',${it.share_id||0},${it.uk||0},'${esc(it.link)}')">
+            <span class="dot"></span>${esc(it.channel||"—")} ${chFollows.includes(it.channel)?"⭐":""}
+          </div>
+          <div class="ch-meta">${[it.year, it.liked_count?it.liked_count+" ❤️":""].filter(Boolean).join(" · ")}</div>
+          <div class="ch-actions">
+            <button class="save" onclick="saveChItem(${k})">💾 Simpan</button>
+            <button class="${chFollows.includes(it.channel)?"filled":""}" onclick="followCh('${esc(it.channel)}',${it.share_id||0},${it.uk||0},'${esc(it.link)}')">⭐</button>
+          </div>
+        </div>
+      </div>`).join("");
+  }
+}
+async function followCh(name, shareId, uk, link){
+  if(!name) return;
+  const on = chFollows.includes(name);
+  const r = on ? await post("/api/channel/unfollow",{name})
+               : await post("/api/channel/follow",{name, share_id:shareId, uk, link});
+  if(!r.ok){ toast(r.error||"Gagal"); return; }
+  if(on){ chFollows = chFollows.filter(x=>x!==name); toast(`${name} tidak diikuti lagi`); }
+  else { chFollows.push(name); toast(`Mengikuti ${name}`); }
+  renderChips(); renderChItems();
+}
+function openChItem(k){
+  const it = chItems[k]; if(!it) return;
+  if(it.link) window.open(it.link, "_blank", "noopener");
+  else toast("Tidak ada share link");
+}
+async function saveChItem(k){
+  const it = chItems[k]; if(!it) return;
+  if(!it.share_id || !it.uk || !it.fs_id){
+    toast("Item ini tidak punya data share untuk disimpan"); return;
+  }
+  await openSaveModal({
+    title: it.name,
+    share_id: it.share_id, uk: it.uk,
+    items: [{fs_id: it.fs_id, name: it.name, is_dir: it.is_dir, size: it.size}],
+  });
+}
+
+// ---- search ----
+function renderChSearch(){
+  const g = $("#ch-grid");
+  g.className = "ch-grid";
+  g.innerHTML = `
+    <div class="share-box" style="grid-column:1/-1">
+      <input id="ch-q" type="search" placeholder="Cari film, series, channel…" onkeydown="if(event.key==='Enter')doChSearch()">
+      <button onclick="doChSearch()">Cari</button>
+    </div>
+    <div id="ch-sugg" style="grid-column:1/-1"></div>
+    <div id="ch-res" style="grid-column:1/-1"></div>`;
+  api("/api/channel/search/history").then(r=>{
+    const el = $("#ch-sugg");
+    if(!el || !r.items?.length) return;
+    el.innerHTML = `<div class="field-label">Riwayat</div>` + r.items.map(x=>
+      `<button class="ch-chip" style="margin:4px" onclick="doChSearch('${esc(x)}')">${esc(x)}</button>`).join("");
+  }).catch(()=>{});
+}
+async function doChSearch(term){
+  const q = (term ?? $("#ch-q")?.value ?? "").trim();
+  if(!q) return;
+  const res = $("#ch-res");
+  if(res) res.innerHTML = `<div class="spinner"></div>`;
+  const r = await api("/api/channel/search?q="+encodeURIComponent(q));
+  if(!r.ok){ if(res) res.innerHTML = `<div class="empty">Gagal mencari</div>`; return; }
+  chItems = r.items||[];
+  if(res){
+    res.innerHTML = chItems.length ? "" : `<div class="empty">Tidak ada hasil untuk "${esc(q)}"</div>`;
+  }
+  const g = $("#ch-grid");
+  g.innerHTML = `
+    <div class="share-box" style="grid-column:1/-1">
+      <input id="ch-q" type="search" value="${esc(q)}" placeholder="Cari film, series, channel…" onkeydown="if(event.key==='Enter')doChSearch()">
+      <button onclick="doChSearch()">Cari</button>
+    </div>
+    <div id="ch-sugg" style="grid-column:1/-1"></div>
+    <div id="ch-res" style="grid-column:1/-1"></div>`;
+  const grid = $("#ch-grid");
+  const holder = document.createElement("div");
+  holder.className = chView==="list" ? "ch-list" : "ch-grid";
+  holder.style.gridColumn = "1/-1";
+  holder.innerHTML = chItems.map((it,k)=>`
+    <div class="ch-card">
+      <div class="ch-cover" onclick="openChItem(${k})">
+        ${it.thumb?`<img src="/proxy/u?u=${encodeURIComponent(it.thumb)}" loading="lazy">`:`<div class="placeholder">🎬</div>`}
+      </div>
+      <div class="ch-body">
+        <div class="ch-title">${esc(it.name)}</div>
+        <div class="ch-chan" onclick="followCh('${esc(it.channel)}',${it.share_id||0},${it.uk||0},'${esc(it.link)}')">
+          <span class="dot"></span>${esc(it.channel||"—")}
+        </div>
+        <div class="ch-actions">
+          <button class="save" onclick="saveChItem(${k})">💾 Simpan</button>
+          <button class="${chFollows.includes(it.channel)?"filled":""}" onclick="followCh('${esc(it.channel)}',${it.share_id||0},${it.uk||0},'${esc(it.link)}')">⭐</button>
+        </div>
+      </div>
+    </div>`).join("");
+  grid.appendChild(holder);
+}
+
+async function loadLiked(){
+  const g = $("#ch-grid");
+  g.className = "ch-list";
+  g.innerHTML = `<div class="spinner"></div>`;
+  const r = await api("/api/channel/likes");
+  if(!r.ok){ g.innerHTML = `<div class="empty">Gagal memuat</div>`; return; }
+  g.innerHTML = r.items.length ? r.items.map(it=>`
+    <div class="ch-row">
+      <div class="ch-cover"><div class="placeholder">${it.is_dir?"📁":"🎬"}</div></div>
+      <div class="ch-row-body">
+        <div class="ch-title">${esc(it.name)}</div>
+        <div class="ch-meta">${it.path||""}</div>
+      </div>
+    </div>`).join("") : `<div class="empty">Belum ada item yang disukai</div>`;
+}
+
+// ================= SHARE =================
+async function resolveShare(){
+  const url = $("#sh-url").value.trim();
+  if(!url){ toast("Tempel share link dulu"); return; }
+  const box = $("#sh-result");
+  box.innerHTML = `<div class="spinner"></div>`;
+  const r = await api("/api/channel/share/resolve?url="+encodeURIComponent(url));
+  if(!r.ok){ box.innerHTML = `<div class="empty" style="color:var(--danger)">${esc(r.error||"Gagal membuka share")}</div>`; return; }
+  shareSel = new Set();
+  shareCtx = { share_id: r.share_id || 0, uk: r.uk, items: r.items||[] };
+  const files = r.items||[];
+  box.innerHTML = `
+    <div class="field-label" style="margin-bottom:8px">${files.length} file — pilih yang mau disimpan</div>
+    ${files.map((f,i)=>`
+      <label class="share-file">
+        <input type="checkbox" onchange="toggleShareSel(${i})">
+        <div class="sf-body">
+          <div class="sf-name">${esc(f.name)}</div>
+          <div class="sf-meta">${f.is_dir?"Folder":fmt(f.size)}</div>
+        </div>
+      </label>`).join("")}
+    <button class="primary" style="width:100%;margin-top:10px;background:var(--accent);color:#fff;padding:12px;border-radius:10px;font-weight:600"
+      onclick="saveShareItems()">💾 Simpan terpilih ke drive saya</button>`;
+  toast(`${files.length} file ditemukan`);
+}
+function toggleShareSel(i){
+  const idx = [...shareSel];
+  if(shareSel.has(i)) shareSel.delete(i); else shareSel.add(i);
+}
+async function saveShareItems(){
+  if(!shareSel.size){ toast("Pilih minimal satu file"); return; }
+  const ctx = shareCtx;
+  const picked = ctx.items.filter((_,i)=>shareSel.has(i));
+  await openSaveModal({
+    title: `${picked.length} file dari share`,
+    share_id: ctx.share_id, uk: ctx.uk,
+    items: picked.map(f=>({fs_id:f.fs_id, name:f.name, is_dir:f.is_dir, size:f.size})),
+  });
+}
+
+async function loadMyShares(){
+  const box = $("#sh-mine");
+  box.innerHTML = `<div class="spinner"></div>`;
+  const r = await api("/api/channel/share/mine?num=50");
+  if(!r.ok){ box.innerHTML = `<div class="empty">Gagal memuat</div>`; return; }
+  box.innerHTML = r.items.length ? r.items.map(s=>`
+    <div class="share-file">
+      <div class="sf-body">
+        <div class="sf-name">${esc(s.name||"(tanpa nama)")}</div>
+        <div class="sf-meta">${s.file_cnt} file · ${fmt(s.size)} · ${esc(s.surl)}</div>
+      </div>
+      <button style="background:var(--surface-elev);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:11px"
+        onclick="$('#sh-url').value='${esc(s.surl)}';resolveShare()">Buka</button>
+    </div>`).join("") : `<div class="empty">Belum ada share link</div>`;
+}
+
+// ================= MODAL SIMPAN =================
+function closeModal(){ $("#modal").hidden = true; $("#modal-body").innerHTML=""; $("#modal-foot").innerHTML=""; }
+async function openSaveModal(ctx){
+  const body = $("#modal-body"), foot = $("#modal-foot");
+  $("#modal-title").textContent = ctx.title;
+  body.innerHTML = `
+    <div>
+      <label class="field-label">Simpan ke folder</label>
+      <div class="folder-pick">
+        <input class="field-input" id="dest-path" value="${esc(destPath)}">
+        <button onclick="pickFolder()">📁</button>
+      </div>
+    </div>
+    <div>
+      <label class="field-label">File yang dipilih (${ctx.items.length})</label>
+      ${ctx.items.map(f=>`
+        <div class="share-file">
+          <div class="sf-body">
+            <div class="sf-name">${esc(f.name)}</div>
+            <div class="sf-meta">${f.is_dir?"Folder":fmt(f.size)}</div>
+          </div>
+        </div>`).join("")}
+    </div>
+    <div>
+      <label class="field-label">Jika file sudah ada</label>
+      <select class="field-input" id="dest-ondup">
+        <option value="newcopy">Simpan sebagai salinan baru</option>
+        <option value="overwrite">Timpa yang lama</option>
+      </select>
+    </div>`;
+  foot.innerHTML = `
+    <button onclick="closeModal()">Batal</button>
+    <button class="primary" onclick="doSave(${ctx.share_id||0},${ctx.uk||0},${JSON.stringify(ctx.items.map(f=>f.fs_id))})">💾 Simpan</button>`;
+  $("#modal").hidden = false;
+}
+async function doSave(shareId, uk, fsIds){
+  const path = ($("#dest-path")?.value || "/").trim() || "/";
+  const ondup = $("#dest-ondup")?.value || "newcopy";
+  const ids = JSON.parse(fsIds);
+  if(!shareId){
+    toast("Share ID tidak tersedia untuk item ini");
+    return;
+  }
+  const btn = $("#modal-foot .primary");
+  btn.disabled = true; btn.textContent = "Menyimpan…";
+  const r = await post("/api/channel/share/save", { share_id: shareId, uk, fs_ids: ids, path, ondup });
+  btn.disabled = false; btn.textContent = "💾 Simpan";
+  if(!r.ok){ toast(r.error||"Gagal menyimpan"); return; }
+  closeModal();
+  toast(`${r.saved} file sedang disalin ke ${path}`);
+}
+async function pickFolder(){
+  const cur = ($("#dest-path")?.value || "/").trim() || "/";
+  const body = $("#modal-body");
+  const holder = document.createElement("div");
+  holder.id = "folder-browser";
+  holder.innerHTML = `<div class="spinner"></div>`;
+  body.prepend(holder);
+  const r = await api("/api/list?dir="+encodeURIComponent(cur)+"&num=200");
+  if(!r.ok){ holder.innerHTML = `<div class="empty">Gagal memuat folder</div>`; return; }
+  const dirs = (r.items||[]).filter(x=>x.dir);
+  holder.innerHTML = `
+    <div class="field-label">Folder</div>
+    <div class="folder-pick" style="margin-bottom:8px">
+      <input class="field-input" id="fb-path" value="${esc(cur)}">
+      <button onclick="loadFolderBrowser()">🔄</button>
+    </div>
+    <div style="max-height:220px;overflow:auto">
+      ${cur!=="/"?`<div class="share-file" onclick="loadFolderBrowser('${esc(cur.split("/").slice(0,-1).join("/")||"/")}')">
+        <div class="sf-body"><div class="sf-name">⬆️ .. (naik satu level)</div></div></div>`:""}
+      ${dirs.map(d=>`<div class="share-file" onclick="loadFolderBrowser('${esc(d.path)}')">
+        <div class="sf-body"><div class="sf-name">📁 ${esc(d.name)}</div></div></div>`).join("") || `<div class="empty">Tidak ada subfolder</div>`}
+    </div>
+    <button class="primary" style="width:100%;margin-top:10px;background:var(--accent);color:#fff;padding:11px;border-radius:10px;font-weight:600"
+      onclick="pickFolderConfirm()">Pilih folder ini</button>`;
+}
+async function loadFolderBrowser(path){
+  const p = path ?? ($("#fb-path")?.value || "/");
+  const holder = $("#folder-browser");
+  if(holder) holder.innerHTML = `<div class="spinner"></div>`;
+  const r = await api("/api/list?dir="+encodeURIComponent(p)+"&num=200");
+  if(!r.ok){ if(holder) holder.innerHTML = `<div class="empty">Gagal memuat</div>`; return; }
+  const dirs = (r.items||[]).filter(x=>x.dir);
+  if(!holder) return;
+  holder.innerHTML = `
+    <div class="field-label">Folder</div>
+    <div class="folder-pick" style="margin-bottom:8px">
+      <input class="field-input" id="fb-path" value="${esc(p)}">
+      <button onclick="loadFolderBrowser()">🔄</button>
+    </div>
+    <div style="max-height:220px;overflow:auto">
+      ${p!=="/"?`<div class="share-file" onclick="loadFolderBrowser('${esc(p.split("/").slice(0,-1).join("/")||"/")}')">
+        <div class="sf-body"><div class="sf-name">⬆️ .. (naik satu level)</div></div></div>`:""}
+      ${dirs.map(d=>`<div class="share-file" onclick="loadFolderBrowser('${esc(d.path)}')">
+        <div class="sf-body"><div class="sf-name">📁 ${esc(d.name)}</div></div></div>`).join("") || `<div class="empty">Tidak ada subfolder</div>`}
+    </div>
+    <button class="primary" style="width:100%;margin-top:10px;background:var(--accent);color:#fff;padding:11px;border-radius:10px;font-weight:600"
+      onclick="pickFolderConfirm()">Pilih folder ini</button>`;
+}
+function pickFolderConfirm(){
+  const p = ($("#fb-path")?.value || "/").trim() || "/";
+  destPath = p;
+  const dp = $("#dest-path");
+  if(dp) dp.value = p;
+  const holder = $("#folder-browser");
+  if(holder) holder.remove();
+}
+
+// ================= FILE TAB (lama) =================
 async function go(p, silent=false){
   const r=await api("/api/list?dir="+encodeURIComponent(p)+"&order="+$("#sort").value);
   if(!r.ok){ if(!silent)toast("Gagal memuat: "+r.error); return; }
@@ -348,7 +929,7 @@ $("#grid").onclick=e=>{
   }else toast("Tipe file belum didukung pemutar");
 };
 function selAll(){ shown.forEach(i=>sel.add(i.path)); render(); }
-function live(){ clearInterval(liveTimer); if($("#lv").checked) liveTimer=setInterval(()=>{ if(!$("#app").hidden && $("#viewer").hidden) go(cwd,true); },15000); }
+function live(){ clearInterval(liveTimer); if($("#lv").checked) liveTimer=setInterval(()=>{ if(!$("#app").hidden && $("#viewer").hidden && tab==="files") go(cwd,true); },15000); }
 async function op(opera, fl){
   const r=await post("/api/op",{opera,filelist:fl});
   toast(r.ok?"Berhasil":"Gagal (errno "+r.errno+")");
