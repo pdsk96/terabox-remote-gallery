@@ -299,6 +299,35 @@ header{
 .viewer-body video,.viewer-body img{max-width:100%;max-height:100%;display:block;background:#000}
 .viewer-body audio{width:100%;max-width:600px}
 
+/* ---------- Picture in Picture ---------- */
+#viewer.pip-mode .viewer-body{display:none}
+#viewer.pip-mode .viewer-header{padding:7px 12px}
+.pip-strip{
+  position:fixed;left:0;right:0;bottom:0;z-index:46;
+  background:rgba(12,15,20,.97);border-top:1px solid var(--border);
+  padding:7px 10px;display:none;flex-direction:column;gap:6px;
+  backdrop-filter:blur(10px)
+}
+.pip-strip.on{display:flex}
+.pip-row{display:flex;align-items:center;gap:6px}
+.pip-btn{
+  background:var(--surface-elev);border:1px solid var(--border);color:var(--text);
+  width:32px;height:32px;flex:none;border-radius:8px;font-size:13px;
+  display:flex;align-items:center;justify-content:center
+}
+.pip-btn:hover{border-color:var(--accent);color:var(--accent)}
+.pip-btn.wide{width:auto;padding:0 10px;font-size:11.5px}
+.pip-title{
+  font-size:12px;color:var(--text);flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+}
+.pip-time{font-size:10.5px;color:var(--text-muted);font-variant-numeric:tabular-nums;flex:none}
+.pip-progress{
+  flex:1;height:4px;background:var(--surface-elev);border-radius:2px;
+  overflow:hidden;cursor:pointer;position:relative;min-width:40px
+}
+.pip-progress i{display:block;height:100%;background:var(--accent);width:0}
+
 /* ---------- Toast ---------- */
 #toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
@@ -490,10 +519,29 @@ header{
         <option value="1080">HLS 1080p</option>
       </select>
       <select id="vs" onchange="spd()"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>
+      <button onclick="togglePip()" id="btn-pip" title="Picture in Picture">⧉</button>
       <button onclick="closeV()">✖ Tutup</button>
     </div>
   </div>
   <div class="viewer-body" id="viewer-content"></div>
+</div>
+
+<!-- Strip kontrol saat video berjalan Picture in Picture -->
+<div class="pip-strip" id="pip-strip">
+  <div class="pip-row">
+    <button class="pip-btn" onclick="pipPrev()" title="Video sebelumnya">⏮</button>
+    <button class="pip-btn" onclick="pipToggle()" id="pip-play" title="Jeda / Lanjut">⏸</button>
+    <button class="pip-btn" onclick="pipNext()" title="Video berikutnya">⏭</button>
+    <div class="pip-title" id="pip-title">—</div>
+    <span class="pip-time" id="pip-time">0:00 / 0:00</span>
+  </div>
+  <div class="pip-row">
+    <div class="pip-progress" id="pip-progress" onclick="pipSeek(event)"><i id="pip-bar"></i></div>
+    <button class="pip-btn wide" onclick="pipSpeed()" id="pip-speed" title="Kecepatan">1×</button>
+    <button class="pip-btn" onclick="pipMute()" id="pip-mute" title="Bisukan">🔊</button>
+    <button class="pip-btn" onclick="togglePip()" title="Kembali ke layar penuh">⛶</button>
+    <button class="pip-btn" onclick="closeV()" title="Tutup">✖</button>
+  </div>
 </div>
 
 <div id="modal" hidden>
@@ -1079,18 +1127,134 @@ function ren(){ if(sel.size!==1)return toast("Pilih tepat 1 item"); const p=[...
 function mv(o){ if(!sel.size)return toast("Pilih item dulu"); const d=prompt((o==="move"?"Pindah":"Salin")+" ke folder (path penuh):",cwd); if(d)op(o,[...sel].map(p=>({path:p,dest:d,newname:p.split("/").pop()}))); }
 function del(){ if(sel.size&&confirm("Hapus "+sel.size+" item?"))op("delete",[...sel]); else if(!sel.size)toast("Pilih item dulu"); }
 async function mk(){ const n=prompt("Nama folder baru:"); if(!n)return; const r=await post("/api/mkdir",{path:join(cwd,n)}); toast(r.ok?"Folder dibuat":"Gagal (errno "+r.errno+")"); go(cwd); }
-function closeV(){ if(hls){hls.destroy();hls=null} $("#viewer-content").replaceChildren(); $("#viewer").hidden=true; }
+function closeV(){
+  exitPip();
+  if(hls){hls.destroy();hls=null}
+  $("#viewer-content").replaceChildren();
+  $("#viewer").hidden=true;
+}
 function nav(d){ vi=(vi+d+media.length)%media.length; play(); }
 function spd(){ const m=$("#viewer-content video,#viewer-content audio"); if(m){ const r=+$("#vs").value; if(isFinite(r))m.playbackRate=r; } }
+
+// ================= Picture in Picture =================
+let pipVideo = null;      // element video yang sedang diputar
+let pipMode = false;     // true = mode PiP aktif
+let pipRate = 1;
+
+function getVideo(){
+  return $("#viewer-content video");
+}
+function fmtTime(s){
+  if(!isFinite(s) || s<0) return "0:00";
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60), x=Math.floor(s%60);
+  return h ? `${h}:${String(m).padStart(2,"0")}:${String(x).padStart(2,"0")}`
+           : `${m}:${String(x).padStart(2,"0")}`;
+}
+async function togglePip(){
+  const v = getVideo();
+  if(!v){ toast("PiP hanya untuk video"); return; }
+  if(pipMode){ exitPip(); return; }
+
+  // Cek dukungan browser
+  if(!document.pictureInPictureEnabled){
+    toast("Browser tidak mendukung Picture in Picture");
+    return;
+  }
+  try{
+    await v.requestPictureInPicture();
+    enterPipUi();
+  }catch(err){
+    toast("Gagal PiP: " + (err?.message || err));
+  }
+}
+function enterPipUi(){
+  pipMode = true;
+  pipVideo = getVideo();
+  $("#viewer").classList.add("pip-mode");
+  $("#pip-strip").classList.add("on");
+  $("#pip-title").textContent = media[vi]?.name || "—";
+  $("#pip-play").textContent = "⏸";
+  if(pipVideo) pipVideo.addEventListener("timeupdate", pipSync);
+  pipSync();
+  toast("Picture in Picture aktif");
+}
+function exitPip(){
+  if(pipVideo){
+    pipVideo.removeEventListener("timeupdate", pipSync);
+    pipVideo = null;
+  }
+  pipMode = false;
+  $("#viewer")?.classList.remove("pip-mode");
+  $("#pip-strip")?.classList.remove("on");
+  // keluar dari PiP native bila masih aktif
+  if(document.pictureInPictureElement){
+    document.exitPictureInPicture().catch(()=>{});
+  }
+}
+function pipSync(){
+  const v = pipVideo || getVideo();
+  if(!v) return;
+  const dur = v.duration || 0;
+  const cur = v.currentTime || 0;
+  $("#pip-bar").style.width = dur ? (cur/dur*100)+"%" : "0%";
+  $("#pip-time").textContent = `${fmtTime(cur)} / ${fmtTime(dur)}`;
+  $("#pip-play").textContent = v.paused ? "▶" : "⏸";
+  $("#pip-speed").textContent = pipRate+"×";
+  $("#pip-mute").textContent = v.muted ? "🔇" : "🔊";
+}
+function pipToggle(){
+  const v = pipVideo || getVideo();
+  if(!v) return;
+  if(v.paused) v.play().catch(()=>{}); else v.pause();
+  pipSync();
+}
+function pipPrev(){ nav(-1); }
+function pipNext(){ nav(1); }
+function pipMute(){
+  const v = pipVideo || getVideo();
+  if(!v) return;
+  v.muted = !v.muted;
+  pipSync();
+}
+function pipSpeed(){
+  const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  let i = rates.indexOf(pipRate);
+  if(i<0) i = 2;
+  pipRate = rates[(i+1) % rates.length];
+  const v = pipVideo || getVideo();
+  if(v) v.playbackRate = pipRate;
+  const sel = $("#vs"); if(sel) sel.value = String(pipRate);
+  pipSync();
+}
+function pipSeek(ev){
+  const v = pipVideo || getVideo();
+  if(!v || !v.duration) return;
+  const bar = $("#pip-progress");
+  const rect = bar.getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+  v.currentTime = ratio * v.duration;
+  pipSync();
+}
+
 function play(){
-  const i=media[vi]; if(!i){ closeV(); return; } if(hls){hls.destroy();hls=null}
+  const i=media[vi]; if(!i){ closeV(); return; }
+  if(hls){hls.destroy();hls=null}
+  const wasPip = pipMode;
+  if(wasPip) exitPip();
   $("#viewer").hidden=false; $("#viewer-title").textContent=i.name;
   const fp="/proxy/file?path="+encodeURIComponent(i.path), c=$("#viewer-content");
-  $("#vq").hidden=$("#vs").hidden=i.cat===3;
+  const isVideo = i.cat===1;
+  $("#vq").hidden=$("#vs").hidden=!isVideo;
+  $("#btn-pip").style.display = isVideo ? "" : "none";
   if(i.cat===3){ c.innerHTML=`<img src="${fp}" style="max-width:100%;max-height:100vh">`; return; }
   if(i.cat===2){ c.innerHTML=`<audio controls autoplay src="${fp}"></audio>`; return; }
   const el=document.createElement("video"); el.controls=el.autoplay=el.playsInline=true;
-  el.onloadedmetadata=spd; el.onended=()=>nav(1); c.replaceChildren(el);
+  el.playbackRate = pipRate;
+  el.onloadedmetadata=spd; el.onended=()=>nav(1);
+  el.addEventListener("timeupdate", pipSync);
+  el.addEventListener("play", pipSync);
+  el.addEventListener("pause", pipSync);
+  c.replaceChildren(el);
   const k=$("#vq").value;
   if(k!=="orig"){
     const u="/proxy/hls?path="+encodeURIComponent(i.path)+"&q="+k;
@@ -1099,12 +1263,33 @@ function play(){
       hls.on(Hls.Events.ERROR,(e,d)=>{ if(d.fatal){ toast("HLS gagal, memakai file asli"); $("#vq").value="orig"; play(); } });
     }else el.src=u;
   }else el.src=fp;
+  // kembali ke mode PiP setelah ganti video bila sebelumnya aktif
+  if(wasPip){
+    const wait = setInterval(()=>{
+      const v = getVideo();
+      if(v && v.readyState >= 1){
+        clearInterval(wait);
+        v.requestPictureInPicture().then(enterPipUi).catch(()=>{});
+      }
+    }, 200);
+  }
 }
+// events PiP native
+document.addEventListener("enterpictureinpicture", e=>{
+  if(e.target === pipVideo || e.target === getVideo()) enterPipUi();
+});
+document.addEventListener("leavepictureinpicture", ()=>{
+  if(pipMode) exitPip();
+});
 document.addEventListener("keydown",e=>{
   if($("#viewer").hidden)return;
   if(e.key==="Escape")closeV();
   if(e.key==="ArrowRight")nav(1);
   if(e.key==="ArrowLeft")nav(-1);
+  if(e.key===" "||e.key==="k"){ e.preventDefault(); pipToggle(); }
+  if(e.key==="p"||e.key==="P"){ e.preventDefault(); togglePip(); }
+  if(e.key==="m"||e.key==="M"){ e.preventDefault(); pipMute(); }
+  if(e.key==="ArrowUp"){ e.preventDefault(); pipSpeed(); }
 });
 // Shortcut penjelajah file: Backspace / Alt+Left = kembali, Alt+Up = naik level
 document.addEventListener("keydown",e=>{
