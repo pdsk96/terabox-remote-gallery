@@ -60,19 +60,17 @@ def feed():
     scope = request.args.get("scope", "all")  # all | followed
 
     if scope == "followed":
-        # Feed hanya dari channel yang diikuti user
         followed = set(get_follow_store().names())
         if not followed:
             return jsonify(ok=True, items=[], total=0, scope=scope)
-        items = svc.aggregate_feed(kind=kind, pages=3, count=count)
-        items = [i for i in items if (i.get("share_user") or {}).get("name") in followed]
-        if channel_filter:
-            items = [i for i in items
-                     if (i.get("share_user") or {}).get("name") == channel_filter]
+        # Gunakan feed halaman yang sama dengan tab Feed agar konten konsisten.
+        # Jangan agregasi halaman tambahan — supaya "Diikuti" = subset dari "Feed".
+        raw = svc.hot_recommend(kind=kind, page=page, count=count)
+        items = [i for i in raw if (i.get("share_user") or {}).get("name") in followed]
+        # Filter by channel name (passed via `category` di frontend tab Diikuti)
         if category:
             items = [i for i in items
-                     if category.lower() in str(i.get("resource_info", {}).get("tag", "")).lower()]
-        items = items[(page - 1) * count: page * count]
+                     if (i.get("share_user") or {}).get("name") == category]
         return jsonify(ok=True, items=[normalize_item(i) for i in items],
                        total=len(items), scope=scope)
 

@@ -498,6 +498,7 @@ function switchTab(name){
 }
 function switchSub(name){
   chSub = name; chPage = 1;
+  if(name==="followed") chCategory = "";  // kategori tidak berlaku untuk tab Diikuti
   $$(".subtabs button").forEach(b=>b.classList.toggle("active", b.dataset.sub===name));
   $("#ch-chips").hidden = name!=="feed" && name!=="followed";
   renderChips();
@@ -552,7 +553,7 @@ async function loadFeed(){
 function renderChItems(){
   const g = $("#ch-grid");
   if(!chItems.length){
-    g.innerHTML = `<div class="empty">${chSub==="followed"?"Belum ada channel diikuti. Buka tab Feed, lalu tekan ⭐ pada channel yang Anda suka.":"Tidak ada konten"}</div>`;
+    g.innerHTML = `<div class="empty">${chSub==="followed"?"Belum ada item dari channel yang diikuti di feed saat ini. Buka tab Feed, ikuti channel (⭐), lalu kembali ke sini.":"Tidak ada konten"}</div>`;
     return;
   }
   if(chView==="list"){
