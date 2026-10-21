@@ -47,9 +47,12 @@ def create_app(settings: Optional[Settings] = None) -> Flask:
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         # CSP: allow inline script (frontend) + hls.js CDN
+        # worker-src blob: -> hls.js membuat Web Worker dari blob URL (transmuxer)
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "worker-src 'self' blob:; "
+            "child-src 'self' blob:; "
             "style-src 'self' 'unsafe-inline'; "
             "img-src 'self' data: https:; "
             "media-src 'self' https: blob:; "
